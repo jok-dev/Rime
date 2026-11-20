@@ -29,6 +29,9 @@ defaults:
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: 0
+  # As in ci.yml: wait out a runner that cannot resolve names just after it
+  # starts, where Cargo's 3 retries give up after about 11 seconds.
+  CARGO_NET_RETRY: 10
   # Cargo.toml keeps debug info in release builds for profiling. Published
   # executables drop it; function names stay, so a backtrace still names its
   # frames.
@@ -49,8 +52,14 @@ jobs:
         with:
           persist-credentials: false
 
+      # As in ci.yml: install by `rustup toolchain install`, without letting
+      # rustup update itself, and fall back to install-on-first-use for a
+      # rustup before 1.28.
       - name: Install the toolchain named in rust-toolchain.toml
-        run: rustup show active-toolchain || rustup toolchain install
+        run: |
+          rustup --version
+          rustup toolchain install --no-self-update || rustup show active-toolchain
+          rustc -vV
 
       - name: Compare the tag with the version in Cargo.toml
         id: version
@@ -124,7 +133,8 @@ jobs:
 
       - name: Install the toolchain named in rust-toolchain.toml
         run: |
-          rustup show active-toolchain || rustup toolchain install
+          rustup --version
+          rustup toolchain install --no-self-update || rustup show active-toolchain
           rustup target add "$TARGET"
           rustc -vV
           cargo -V
@@ -221,7 +231,8 @@ jobs:
 
       - name: Install the toolchain named in rust-toolchain.toml
         run: |
-          rustup show active-toolchain || rustup toolchain install
+          rustup --version
+          rustup toolchain install --no-self-update || rustup show active-toolchain
           rustc -vV
 
       # No cache in this job either: the package sources the texts are read

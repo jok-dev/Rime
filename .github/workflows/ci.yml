@@ -27,6 +27,11 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: 0
+  # Cargo gives up on a download after 3 retries, about 11 seconds. A hosted
+  # runner can be without name resolution for longer than that just after it
+  # starts: the first macOS job of this repository failed that way, on
+  # index.crates.io. 10 retries wait about 80 seconds.
+  CARGO_NET_RETRY: 10
 
 jobs:
   test:
@@ -53,9 +58,20 @@ jobs:
         with:
           persist-credentials: false
 
+      # `rustup toolchain install` without a name installs the toolchain in
+      # rust-toolchain.toml. A rustup too old for that (before 1.28) fails
+      # there and installs it on the first use instead, which newer ones warn
+      # is going away.
+      #
+      # --no-self-update: the step must not replace the rustup it runs with.
+      # On Windows the replacing goes on after the command returns, and the
+      # next rustup, rustc or cargo command fails while it does. rustup skips
+      # the update by itself where CI is set, as it is here; the flag also
+      # covers this step run by hand.
       - name: Install the toolchain named in rust-toolchain.toml
         run: |
-          rustup show active-toolchain || rustup toolchain install
+          rustup --version
+          rustup toolchain install --no-self-update || rustup show active-toolchain
           rustc -vV
           cargo -V
 
