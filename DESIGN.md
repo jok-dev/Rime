@@ -1,5 +1,7 @@
 # Rime — Design Notes & Session Plan
 
+> This document describes the design Rime is heading for; [`README.md`](README.md) says what the current release checks.
+
 A strict-dialect static checker for Luau, targeting Roblox.
 
 Working doc. Captures what we've settled, what's still open, and the plan to

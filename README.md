@@ -1,33 +1,41 @@
 # Rime
 
 Rime is a command-line static checker for Roblox Luau. Point it at a Rojo
-project and it checks every module against rules much stricter than Luau's
-own `--!strict`: mandatory annotations, strict nil-safety with flow
-narrowing, frozen-table tracking, project-wide call checking, and
-yield-aware analysis that knows the world can change while a script is
-suspended. It reads ordinary `.luau` files and prints diagnostics — no build
-step, no new language, nothing to migrate away from — and it exists to make
-one sentence true:
+project and it checks every module, and the requires and calls between
+them: nil-safety with flow narrowing, frozen-table tracking, project-wide
+call checking, control-flow checks, and unused code. It reads ordinary
+`.luau` files and prints diagnostics — no build step, no new language,
+nothing to migrate away from — and what it does today fits in one sentence:
 
-> If a module checks clean, it cannot raise a runtime type error.
+> Rime reports the defects it can see in the source: a call that does not
+> fit its function, a `require` that reaches no module, a write to a frozen
+> table, a value annotated as optional used where `nil` throws.
+
+Rime 0.1.0 does not infer types: where a check needs a type, it reads the
+annotation you wrote. So a clean run means the rules found nothing. It does
+not prove that a module cannot fail at run time. A report Rime cannot prove
+is marked conservative: `(conservative)` in the text output, with or
+without `--plain`, and `"conservative": true` with `--format json`.
 
 ## Why use Rime
 
 - **Fewer runtime surprises.** The bug classes that actually page you —
-  nil derefs on `Instance?`, state gone stale across a yield, requires of
-  deleted modules — become check-time errors.
-- **Refactor with confidence.** Every call site, require path, and export
-  is checked project-wide.
-- **Excellent error messages.** Every diagnostic carries labeled spans, a
-  `Help:` saying how to fix it, and the reasoning.
+  nil derefs on a value annotated `Instance?`, calls left behind when a
+  function changed, requires of deleted modules — become check-time errors.
+- **Refactor with confidence.** Calls into a module, require paths, and the
+  members a module exports are checked project-wide.
+- **Excellent error messages.** Every diagnostic carries labeled spans,
+  nearly all the reasoning as a note, and many a `Help:` saying how to fix
+  it.
 - **Super fast.** Whole-project checks in seconds; tight enough to run on
   every save.
-- **Highly configurable.** Every rule is set to `"error"`, `"warn"` or
+- **Highly configurable.** A rule is set to `"error"`, `"warn"` or
   `"off"` in `rime.toml`; one-site suppressions are inline, reasoned, and
   greppable.
-  Adopt incrementally on legacy code, run the full theorem on new code.
-- **Built for the AI loop.** Agents write plausible Luau; Rime decides
-  whether it is provable Luau. Self-contained diagnostics make
+  Adopt incrementally on legacy code: start a rule at `"warn"` and raise it
+  to `"error"` when the code is clean.
+- **Built for the AI loop.** Agents write plausible Luau; Rime checks it
+  against the project it has to fit into. Self-contained diagnostics make
   fix-and-rerun work without a human interpreting errors.
 - **First-class Rojo support.** Built for how serious studios ship: filesystem
   source, git, Rojo, CI. Rime reads your Rojo project file directly —
@@ -36,31 +44,48 @@ one sentence true:
 ## The dialect
 
 **Strict dialect** means a strict *subset* of Luau, not a new language: every
-file Rime accepts is already valid `.luau`. No build step, no source maps; the
+file Rime reads is ordinary `.luau`. No build step, no source maps; the
 existing toolchain (luau-lsp, StyLua, Selene, Rojo) keeps working untouched.
-Where the dialect needs something Luau lacks, the only legal moves are magic
-type aliases (`Frozen<T>` — a trivial generic alias to every other tool) and
-`--!` pragma comments. Inside that subset:
+The only thing Rime adds to a file is a comment,
+`-- rime: allow(<rule>, "reason")`. In 0.1.0 the subset bans less than the
+design in `DESIGN.md` describes:
 
-- **Annotations are mandatory** on every function signature and module
-  export — unannotated is an error, not an implicit `any`.
-- **Banned:** `any` in user code, `::` casts outside declared boundaries,
-  implicit globals, dynamic `require`, `getfenv`/`setfenv`/`loadstring`.
-- **Strict nil-safety** with flow narrowing — `FindFirstChild` returns
-  `Instance?` and you must prove it before use.
+- **Annotations are read, not required.** A check that needs a type takes
+  it from the annotation — a local declared `Instance?`, a parameter's
+  type, a return type — and says nothing about a value that has none. An
+  unannotated function is not an error, and neither is `any`, a `::` cast,
+  `getfenv`, `setfenv` or `loadstring`.
+- **Banned:** implicit globals, reads of undefined names, a local that
+  shadows another local or a parameter of the same function, and, in a
+  Rojo project, a dynamic `require` and a `require` of a module that is
+  not there.
+- **Nil-safety** with flow narrowing, for locals and parameters annotated
+  as optional: after
+  `local door: Instance? = workspace:FindFirstChild("Door")` you must prove
+  `door` before use. The same result in an unannotated local, an optional
+  field, and the result of a call are not checked.
 
 ## Top features
 
-- **Yields as an effect** — the differentiator. `WaitForChild`, `task.wait`,
-  remote invokes: all suspend, and the world changes underneath you. Rime
-  tracks yielding and kills narrowing across yield points (deeply frozen
-  values exempt).
 - **CFG-derived checks** — definite assignment, definite return, unreachable
-  code, mutation during `pairs` iteration.
-- **Cross-file call conformance** — arity, argument types, `.`/`:` confusion,
-  checked project-wide against each module's exported interface.
-- **Freeze/const tracking** — `table.freeze` is visible to the type system;
-  frozen is what lets narrowing survive a yield.
+  code, and an assignment into a table inside the `pairs` or `ipairs` loop
+  over it, other than through the loop's own key, when the table is a
+  parameter or a local of the same function.
+- **Cross-file call conformance** — extra arguments, `.`/`:` confusion, and,
+  where the parameter is annotated, a missing argument, or a string, number,
+  boolean or `nil` literal that does not fit a parameter annotated `number`,
+  `string` or `boolean`, checked project-wide against each module's exported
+  interface.
+- **Freeze/const tracking** — `table.freeze` is followed through control
+  flow, inside one function or a module's top level. A write to a table
+  that is frozen on every path is an error when it goes through the local
+  that was frozen: `t` after `table.freeze(t)` on a line of its own, `t`
+  and `f` after `local f = table.freeze(t)`. A second name for the table
+  (`local g = f`), a parameter, and a `table.freeze` call written anywhere
+  else (`f = table.freeze(t)`, `print(table.freeze(t))`) are not followed.
+  Neither is a local declared outside the function, nor a write made by a
+  call (`table.insert(t, v)`, `rawset`). Reassigning a `const` is an error
+  too.
 - **First-class Rojo support** — reads the project file's mounts, walks DataModel
   paths (`game:GetService`, `WaitForChild`, `script.Parent`) and string
   requires (`"./x"`, `"@self/x"`, `.luaurc` aliases), and verifies
@@ -68,13 +93,81 @@ type aliases (`Frozen<T>` — a trivial generic alias to every other tool) and
   require cycles before Roblox does.
 - **Unused-code detection** — unused locals, parameters, and functions, plus
   dataflow-verified dead stores, and module exports nothing in the project
-  uses, each with the exact range to delete.
+  uses. An unused export comes with the exact range to delete (`extent`
+  with `--format json`).
+
+## Install
+
+Every [release](https://github.com/jok-dev/Rime/releases) has one
+executable per system. Each is a single file with nothing to unpack:
+
+| File               | Runs on |
+| ------------------ | ------- |
+| `rime-linux`       | Linux, x86-64, glibc (built on Ubuntu 22.04) |
+| `rime-macos`       | macOS, Apple silicon (arm64) only |
+| `rime-windows.exe` | Windows, x86-64 |
+
+Download the file for your system and `SHA256SUMS` from the same release,
+check the one against the other, and put the executable on your `PATH`
+as `rime`.
+
+Linux:
+
+```bash
+curl -LO https://github.com/jok-dev/Rime/releases/latest/download/rime-linux
+curl -LO https://github.com/jok-dev/Rime/releases/latest/download/SHA256SUMS
+grep rime-linux SHA256SUMS | sha256sum --check
+chmod +x rime-linux    # a download does not keep the executable bit
+./rime-linux --version
+sudo mv rime-linux /usr/local/bin/rime    # on your PATH, as `rime`
+```
+
+macOS:
+
+```bash
+curl -LO https://github.com/jok-dev/Rime/releases/latest/download/rime-macos
+curl -LO https://github.com/jok-dev/Rime/releases/latest/download/SHA256SUMS
+grep rime-macos SHA256SUMS | shasum -a 256 --check
+chmod +x rime-macos
+./rime-macos --version
+sudo mkdir -p /usr/local/bin && sudo mv rime-macos /usr/local/bin/rime
+```
+
+A file downloaded with a browser instead of `curl` is quarantined, and
+macOS refuses to run it until the flag is removed:
+
+```bash
+xattr -d com.apple.quarantine rime-macos
+```
+
+Windows (PowerShell):
+
+```powershell
+Invoke-WebRequest https://github.com/jok-dev/Rime/releases/latest/download/rime-windows.exe -OutFile rime.exe
+Invoke-WebRequest https://github.com/jok-dev/Rime/releases/latest/download/SHA256SUMS -OutFile SHA256SUMS
+(Get-FileHash rime.exe -Algorithm SHA256).Hash -eq (Select-String rime-windows.exe SHA256SUMS).Line.Split(' ')[0]   # True
+.\rime.exe --version
+```
+
+To pin a version, replace `latest/download` with `download/v0.1.0`. The
+release also holds `LICENSE`, `THIRD-PARTY-NOTICES.txt` and
+`COPYRIGHT-library.html`: the license texts for everything built into the
+executables.
+
+Then, at the root of a Rojo project:
+
+```bash
+rime check .
+```
+
+To build from source instead, see [Development](#development). The VS Code
+extension is in [`editors/vscode`](editors/vscode) and is built from source.
 
 ## Configuration
 
-By default a rule that proves a defect is an error, a rule that points at
-code which is valid but unused or suspicious is a warning, and six
-convention rules are off. [`examples/rime.toml`](examples/rime.toml) lists
+By default most rules are errors. The rules about unused code and style,
+and some others whose reports are often deliberate code, are warnings, and
+six convention rules are off. [`examples/rime.toml`](examples/rime.toml) lists
 every rule with its default. Everything is configurable from there:
 downgrade any rule to `"warn"` or `"off"` in `rime.toml` (by name or raw
 code), raise one that warns by default to `"error"` so it fails the run,
@@ -105,9 +198,6 @@ refused with a message that says so.
 - `pcall-discarded` (R0110), `exported-function-reassign` (R0305),
   `module-name-mismatch` (R0310), `enumeration-require` (R0508) and
   `mixed-table` (R0703).
-
-More opt-in rules stricter than the defaults (e.g. `export-frozen`) are
-planned.
 
 An inline allow on a line of its own covers the next line; at the end of a
 line of code it covers that line. A report belongs to the line its label
@@ -234,8 +324,9 @@ ignore = ["Packages/_Index", "third-party"]
 
 [requires]
 # DataModel paths whose requires you vouch for when static resolution
-# misses — e.g. subtrees populated by a runtime loader.
-trust = ["game.ReplicatedStorage.Shared.Runtime"]
+# misses — e.g. subtrees populated by a runtime loader. `*` is one name,
+# `**` a whole subtree; without them an entry is one module.
+trust = ["game.ReplicatedStorage.Shared.Runtime.**"]
 
 [std]
 # Which global names `undefined-variable` (R0022) accepts. Rime bundles
@@ -344,7 +435,7 @@ local t = {}
 local f = table.freeze(t)
 t.x = 1
 --~ ERROR[R0041]: cannot write to a frozen table
---~ NOTE: frozen at line 4
+--~ NOTE: frozen at line 3
 ```
 
 The harness enforces the bucket contract, and the third bucket is the one
@@ -360,17 +451,15 @@ would fix it — which is also the text of the diagnostic (§6 rule 7).
 ### Diagnostic code ranges
 
 ```
-R00xx  syntax / dialect rules (annotations, `any`, globals, shadowing, unused)
+R00xx  syntax and scope (globals, shadowing, unused, `table.freeze`, `const`)
 R01xx  control flow (definite assignment, definite return, unreachable, dead stores)
-R02xx  narrowing, aliasing, yields
-R03xx  call conformance (arity, argument types, `.`/`:` confusion)
-R04xx  freeze / readonly / const
+R02xx  nil narrowing
+R03xx  calls and module members (arity, argument types, `.`/`:` confusion, unknown and unused members)
 R05xx  require & project graph (broken, dynamic, outside-project, circular)
 R06xx  suspicious patterns (almost-swapped, zero divisors, duplicate branches)
 R07xx  style (empty blocks, mixed tables, manual clones)
-R08xx  Roblox checks (Color3 and UDim2 constructor misuse)
+R08xx  Roblox checks (Color3 and UDim2 constructor misuse, Player-keyed tables never cleared)
 R09xx  internal (ICE, unsupported syntax)
-R10xx  untrusted boundaries
 ```
 
 The globals family in R00xx is the one that reads `[std]` above — what

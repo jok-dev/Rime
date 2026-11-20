@@ -243,3 +243,81 @@ fn text_format_unchanged_by_default() {
 
     std::fs::remove_dir_all(&dir).ok();
 }
+
+/// A conservative report is marked in every form of the output, and a
+/// firm one in none: `(conservative)` in the default and the `--plain`
+/// text, `"conservative": true` in JSON.
+#[test]
+fn every_format_marks_a_conservative_report() {
+    let dir = std::env::temp_dir().join(format!("rime-conservative-mark-test-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    // Line 1 is R0023, conservative: a global write may be meant. Line 3
+    // is R0041, firm: the write throws.
+    std::fs::write(
+        dir.join("case.luau"),
+        "count = 1\nlocal t = table.freeze({ n = 1 })\nt.n = 2\nreturn t\n",
+    )
+    .unwrap();
+    let run = |args: &[&str]| -> String {
+        let out = Command::new(env!("CARGO_BIN_EXE_rime"))
+            .arg("check")
+            .args(args)
+            .arg("case.luau")
+            .current_dir(&dir)
+            .output()
+            .expect("spawn rime");
+        assert_eq!(out.status.code(), Some(1), "stderr: {}", String::from_utf8_lossy(&out.stderr));
+        String::from_utf8(out.stdout).expect("utf8")
+    };
+
+    let default = strip_colour(&run(&[]));
+    let heads: Vec<&str> = default.lines().filter(|l| l.starts_with("[R")).collect();
+    assert_eq!(
+        heads,
+        [
+            "[R0023 unscoped-variable] Error (conservative): global write: `count` is not declared `local`",
+            "[R0041 freeze-write] Error: cannot write to a frozen table",
+        ],
+        "{default}"
+    );
+
+    let plain = run(&["--plain"]);
+    let heads: Vec<&str> = plain.lines().filter(|l| l.starts_with("case.luau: ")).collect();
+    assert_eq!(
+        heads,
+        [
+            "case.luau: error[R0023] (conservative): global write: `count` is not declared `local`",
+            "case.luau: error[R0041]: cannot write to a frozen table",
+        ],
+        "{plain}"
+    );
+
+    let json: serde_json::Value = serde_json::from_str(&run(&["--format", "json"])).expect("stdout must be pure JSON");
+    let marks: Vec<(&str, bool)> = json["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|d| (d["code"].as_str().unwrap(), d["conservative"].as_bool().unwrap()))
+        .collect();
+    assert_eq!(marks, [("R0023", true), ("R0041", false)]);
+
+    std::fs::remove_dir_all(&dir).ok();
+}
+
+/// `s` without its terminal colour codes.
+fn strip_colour(s: &str) -> String {
+    let mut out = String::new();
+    let mut chars = s.chars();
+    while let Some(c) = chars.next() {
+        if c == '\x1b' {
+            for c in chars.by_ref() {
+                if c == 'm' {
+                    break;
+                }
+            }
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}

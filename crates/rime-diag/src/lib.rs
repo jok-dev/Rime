@@ -152,7 +152,7 @@ pub const RULE_DEFAULTS: &[(u16, Severity, &str)] = &[
     (201, Severity::Error, "a value that may be nil is used where nil throws"),
     (202, Severity::Error, "a value is used, then nil-checked afterwards"),
     (301, Severity::Error, "a call omits a parameter whose type excludes nil"),
-    (302, Severity::Error, "a literal or annotated argument does not match the parameter type"),
+    (302, Severity::Error, "a literal argument does not match a parameter annotated `number`, `string` or `boolean`"),
     (303, Severity::Error, "`.` used to call a method, or `:` to call a plain function"),
     (304, Severity::Error, "more arguments than the callee declares"),
     (305, Severity::Error, "a module's exported function is reassigned"),

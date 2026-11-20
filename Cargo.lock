@@ -1033,7 +1033,7 @@ checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "rime-bench"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "criterion",
  "full_moon",
@@ -1046,7 +1046,7 @@ dependencies = [
 
 [[package]]
 name = "rime-check"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "insta",
  "libtest-mimic",
@@ -1061,7 +1061,7 @@ dependencies = [
 
 [[package]]
 name = "rime-cli"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "clap",
  "ignore",
@@ -1081,7 +1081,7 @@ dependencies = [
 
 [[package]]
 name = "rime-custom"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "globset",
  "mlua",
@@ -1092,18 +1092,18 @@ dependencies = [
 
 [[package]]
 name = "rime-diag"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "ariadne",
 ]
 
 [[package]]
 name = "rime-hir"
-version = "0.0.0"
+version = "0.1.0"
 
 [[package]]
 name = "rime-roblox"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "rime-check",
@@ -1114,14 +1114,14 @@ dependencies = [
 
 [[package]]
 name = "rime-std"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "serde_yaml",
 ]
 
 [[package]]
 name = "rime-syntax"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "full_moon",
  "rime-hir",

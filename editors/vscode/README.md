@@ -31,15 +31,15 @@ The file icon is the "moon" icon of Feather (MIT — see
   the diagnostics. No LSP, no code actions. `rime.checkOnSave` and
   `rime.watchFiles` apply only in this mode.
 
-Either mode runs whatever `rime.path` points at — rebuild the CLI
-(`cargo build --release`) and it takes effect on the next check/restart, no
-extension changes needed. `rime.mode` changes need a window reload
-(`Developer: Reload Window`).
+Either mode runs whatever `rime.path` points at — replace the executable
+with a newer release, or rebuild it (`cargo build --release`), and it takes
+effect on the next check/restart, no extension changes needed. `rime.mode`
+changes need a window reload (`Developer: Reload Window`).
 
 ### Smoke test (lsp mode)
 
-1. Set `rime.path` to a **release** build with the `lsp` subcommand, e.g.
-   `<repo>\target\release\rime.exe`
+1. Set `rime.path` to a released executable, or to a **release** build of
+   your own, e.g. `<repo>\target\release\rime.exe`
    (`cargo build --release` first if it isn't there yet).
 2. Open a Luau workspace and check the "Rime" output channel: after startup
    it should log a line like `rime: N file(s) republished in …`.
@@ -55,10 +55,14 @@ extension changes needed. `rime.mode` changes need a window reload
 
 ## Setup
 
-1. Build the CLI: `cargo build --release` in the Rime repo.
-2. Set `rime.path` in VS Code settings to the built binary, e.g.
-   `<repo>\\target\\release\\rime.exe`
-   (or put `rime` on PATH and leave the default).
+1. Get the `rime` executable: download the file for your system from the
+   [releases](https://github.com/jok-dev/Rime/releases), as the
+   [Install](https://github.com/jok-dev/Rime#install) section of the main
+   README describes.
+   Building it yourself works too: `cargo build --release` in the Rime repo.
+2. Put it on PATH as `rime` and leave the default, or set `rime.path` in
+   VS Code settings to the file, e.g. `C:\\tools\\rime.exe` or
+   `<repo>\\target\\release\\rime.exe`.
 3. Open a workspace whose root (or an ancestor of it) holds your
    `rime.toml` — in both modes discovery walks up from the first workspace
    folder, never from the server's or the extension host's cwd.
@@ -70,8 +74,10 @@ npm install
 npm run compile          # tsc → out/
 npm test                 # mapping unit tests (plain node, no VS Code host)
 npx @vscode/vsce package --allow-missing-repository
-code --install-extension rime-vscode-0.1.1.vsix
+code --install-extension rime-vscode-0.1.3.vsix
 ```
+
+The `.vsix` is named after `version` in `package.json`.
 
 Or open `editors/vscode` in VS Code and F5 for a dev host.
 

@@ -10,9 +10,14 @@ use crate::{Diagnostic, Severity};
 use ariadne::{Color, Config, Label as ALabel, Report, ReportKind, Source};
 
 pub fn to_terminal(diag: &Diagnostic, path: &str, src: &str) -> String {
-    let kind = match diag.severity {
-        Severity::Error => ReportKind::Error,
-        Severity::Warning => ReportKind::Warning,
+    // A conservative report carries the mark `to_snapshot` prints, in the
+    // same place: after the severity, before the colon. The colours are the
+    // ones ariadne gives `Error` and `Warning`.
+    let kind = match (diag.severity, diag.conservative) {
+        (Severity::Error, false) => ReportKind::Error,
+        (Severity::Warning, false) => ReportKind::Warning,
+        (Severity::Error, true) => ReportKind::Custom("Error (conservative)", Color::Red),
+        (Severity::Warning, true) => ReportKind::Custom("Warning (conservative)", Color::Yellow),
     };
 
     // Spans are BYTE offsets (full-moon); ariadne's Source indexes by CHAR.
@@ -141,6 +146,64 @@ mod tests {
         assert_eq!(line_col(src, 0), (1, 1));
         assert_eq!(line_col(src, 12), (2, 1));
         assert_eq!(line_col(src, 18), (2, 7));
+    }
+
+    /// The default output marks a conservative report with the words the
+    /// plain form uses, and the mark changes nothing else: not the colours,
+    /// not the rest of the report.
+    #[test]
+    fn terminal_marks_a_conservative_report_like_the_plain_form() {
+        let src = "count = 1\n";
+        let firm = |d: crate::Diagnostic| d.with_label(crate::Label::primary(0..5, "here")).with_note("why");
+        let unsure = |d: crate::Diagnostic| d.with_label(crate::Label::primary(0..5, "here")).conservative("why");
+        let cases = [
+            (
+                firm(crate::Diagnostic::error(crate::Code(23), "global write")),
+                unsure(crate::Diagnostic::error(crate::Code(23), "global write")),
+                "Error",
+                "error",
+            ),
+            (
+                firm(crate::Diagnostic::warning(crate::Code(13), "unused local")),
+                unsure(crate::Diagnostic::warning(crate::Code(13), "unused local")),
+                "Warning",
+                "warning",
+            ),
+        ];
+        for (firm, unsure, kind, plain_kind) in cases {
+            let code = firm.code;
+            let name = crate::rule_name(code).expect("a rule with a name");
+            let message = &firm.message;
+
+            let plain = to_snapshot(&unsure, src);
+            assert!(plain.starts_with(&format!("{plain_kind}[{code}] (conservative): {message}\n")), "{plain}");
+            assert!(!to_snapshot(&firm, src).contains("(conservative)"));
+
+            let marked = to_terminal(&unsure, "m.luau", src);
+            let head = strip_colour(marked.lines().next().unwrap());
+            assert_eq!(head, format!("[{code} {name}] {kind} (conservative): {message}"));
+
+            let unmarked = to_terminal(&firm, "m.luau", src);
+            assert!(!unmarked.contains("(conservative)"), "{unmarked}");
+            assert_eq!(marked, unmarked.replacen(&format!("{kind}:"), &format!("{kind} (conservative):"), 1));
+        }
+    }
+
+    fn strip_colour(s: &str) -> String {
+        let mut out = String::new();
+        let mut chars = s.chars();
+        while let Some(c) = chars.next() {
+            if c == '\x1b' {
+                for c in chars.by_ref() {
+                    if c == 'm' {
+                        break;
+                    }
+                }
+            } else {
+                out.push(c);
+            }
+        }
+        out
     }
 
     #[test]
