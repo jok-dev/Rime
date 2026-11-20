@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+error[R0042]: cannot set a metatable on a frozen table
+--> 6:1: `config` is frozen when this call runs
+    5:1: `config` frozen here
+  = note: frozen at line 5: `setmetatable` counts as a write, so it throws on a frozen table
+  = help: set the metatable first and freeze last

@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+error[R0302]: argument 2 of `applyDamage` expects `number`, got `string`
+--> 9:20: this is a string
+    4:56: `amount: number` declared here
+  = help: convert with `tonumber(...)` before passing to `amount`

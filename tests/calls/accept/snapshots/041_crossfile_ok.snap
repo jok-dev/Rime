@@ -1,0 +1,5 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 150
+---
+(no diagnostics)

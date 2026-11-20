@@ -1,0 +1,12 @@
+[package]
+name = "rime-syntax"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# The ONLY crate allowed to depend on the parser. Everything downstream of
+# the lowering consumes rime-hir; see the firewall note there.
+[dependencies]
+full_moon.workspace = true
+rime-hir.workspace = true

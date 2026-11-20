@@ -1,0 +1,6 @@
+{
+  "name": "sdk-shared",
+  "tree": {
+    "$path": "src"
+  }
+}

@@ -1,0 +1,4 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+(no diagnostics)

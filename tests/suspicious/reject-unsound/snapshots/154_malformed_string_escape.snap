@@ -1,0 +1,22 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0611]: decimal escape `\300` is above 255
+--> 10:18: a decimal escape is one byte: 0 to 255
+  = note: Luau refuses to compile the file: "String literal contains malformed escape sequence"
+  = help: the code point 300 is written `\u{12C}`
+  = help: Luau reads the digits as decimal; if they are octal, the byte is `\xC0`
+
+error[R0611]: `\x` escape without two hexadecimal digits
+--> 12:19: `\x` takes exactly two: `\x0A`
+  = note: Luau refuses to compile the file: "String literal contains malformed escape sequence"
+  = help: a single digit takes a zero before it: `\x0A`
+
+error[R0611]: `\u` escape without braces
+--> 14:19: `\u` takes a code point in braces
+  = note: Luau refuses to compile the file: "String literal contains malformed escape sequence"
+  = help: write `\u{1F600}`
+
+error[R0611]: `\u{110000}` is above the last code point, U+10FFFF
+--> 16:21: no such code point
+  = note: Luau refuses to compile the file: "String literal contains malformed escape sequence"

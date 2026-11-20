@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+warning[R0703] (conservative): array items mixed with keyed fields
+--> 9:14: 3 positional item(s) alongside 1 keyed field(s)
+  = note: a table that is both an array and a map trips length (`#`), iteration order, and JSON encoding; split it into an array field and named fields
+  = note: valid Luau, and occasionally deliberate (an options table with a positional payload) — Rime cannot tell

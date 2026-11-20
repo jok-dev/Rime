@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0015] (conservative): `helper` is never used
+--> 12:17: `helper` defined here
+  = note: nothing outside its own body references it, and self-recursion does not count as use
+  = help: call it, export it, or delete it
+
+warning[R0015] (conservative): `countdown` is never used
+--> 16:17: `countdown` defined here
+  = note: nothing outside its own body references it, and self-recursion does not count as use
+  = help: call it, export it, or delete it

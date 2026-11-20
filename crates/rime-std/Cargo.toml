@@ -1,0 +1,11 @@
+[package]
+name = "rime-std"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+# Archived upstream (dtolnay, 2024) but stable and ubiquitous; swap for a
+# maintained fork when the signature data needs schema-level serde derives.
+serde_yaml = "0.9"

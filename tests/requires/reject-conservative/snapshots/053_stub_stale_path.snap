@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0501] (conservative): cannot resolve this require
+--> 9:35: nothing exists at `script.Parent.Archive.Vouchers`
+  = note: the path was followed through the project mounts and no module file is at the destination; if something puts an instance there at runtime, Rime cannot see it — downgrade `broken-require` if this pattern is deliberate
+  = note: guarded by `false and`, this require never runs — it is a stub for `Vouchers`, but the live require at line 14 loads `script.Parent.Vouchers`, not this path
+  = help: update the stub to match the live require

@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 235
+---
+error[R0201] (conservative): `target` may be nil
+--> 19:9: `target` is indexed here
+  = note: a closure captures this local, and a captured local can be rewritten whenever the closure runs — narrowing is disabled for it
+  = help: copy to an uncaptured local first — `local v = target` — and check `v` instead

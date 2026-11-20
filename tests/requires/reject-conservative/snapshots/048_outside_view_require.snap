@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 171
+---
+error[R0503] (conservative): require outside the project's view
+--> 9:24: this path leads into a subtree the project does not mount
+  = note: Rime can only verify requires within the Rojo mounts; unverifiable-at-check-time fails by default — downgrade `require-outside-project` if this subtree is managed elsewhere
+  = help: mount the subtree in default.project.json, or move the module under a mounted path

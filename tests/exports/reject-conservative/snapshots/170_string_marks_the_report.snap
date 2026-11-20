@@ -1,0 +1,22 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0309] (conservative): export `refresh` of module `main` is never used
+--> 15:15: `refresh` exported here
+    extent: 15:1 to 15:28
+    string match: main.luau:13
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: the project has dynamic requires, so the bar is raised: `refresh` is flagged only because nothing in the project reads a member of that name off ANYTHING
+  = note: the name also appears as a string, at main.luau:13: code behind a dynamic require may reach `refresh` by that string, so check before deleting
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_refresh` if it is kept deliberately
+
+warning[R0309] (conservative): export `reset` of module `main` is never used
+--> 18:15: `reset` exported here
+    extent: 18:1 to 18:26
+    string match: consumer.luau:10
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: the project has dynamic requires, so the bar is raised: `reset` is flagged only because nothing in the project reads a member of that name off ANYTHING
+  = note: the name also appears as a string, at consumer.luau:10: code behind a dynamic require may reach `reset` by that string, so check before deleting
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_reset` if it is kept deliberately

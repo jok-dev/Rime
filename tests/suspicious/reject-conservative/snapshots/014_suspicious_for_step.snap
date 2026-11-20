@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0609] (conservative): `for` from 1 up to 8 with a negative step never runs
+--> 13:16: negative step, but the start is below the end
+  = note: a negative step needs the start above the end — did you mean `8, 1, -1`, or a positive step?
+  = note: valid Luau — the body is provably dead
+
+error[R0609] (conservative): `for` with a step of 0 never advances
+--> 22:21: step of 0
+  = note: Luau skips the body when the start is below the end and repeats it forever otherwise — neither is a loop
+  = note: valid Luau — never useful

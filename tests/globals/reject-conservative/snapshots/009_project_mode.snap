@@ -1,0 +1,6 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0022] (conservative): `Knot` is not defined
+--> 2:7: not a local, not a known global
+  = note: code that runs earlier could create this global at runtime

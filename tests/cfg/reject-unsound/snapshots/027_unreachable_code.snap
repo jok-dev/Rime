@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+warning[R0103]: unreachable code
+--> 8:2: this statement can never run
+  = note: every path exits before reaching it

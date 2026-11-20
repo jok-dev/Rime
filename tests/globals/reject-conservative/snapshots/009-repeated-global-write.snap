@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0023] (conservative): global write: `player` is not declared `local`
+--> 9:2: no `local` declaration in any enclosing scope
+  = note: assigning to an undeclared name silently creates a global at runtime — legal Luau, but almost always a forgotten `local`
+
+error[R0023] (conservative): global write: `player` is not declared `local`
+--> 11:3: no `local` declaration in any enclosing scope
+  = note: assigning to an undeclared name silently creates a global at runtime — legal Luau, but almost always a forgotten `local`

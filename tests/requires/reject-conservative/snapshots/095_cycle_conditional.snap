@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0509] (conservative): circular require: loading `dep.luau` leads back to this module
+--> 13:15: load-time require of `dep.luau`
+  = note: cycle: main.luau → dep.luau → main.luau
+  = note: the cycle passes through a require under a top-level condition; if those branches never run together, the cycle is unreachable — Rime cannot tell
+  = note: Roblox throws `Requested module was required recursively` when the second module in the cycle loads
+  = help: break the cycle: keep `local X = false and require(...)` at the top and load for real inside the function that needs it, or move the shared part into a third module

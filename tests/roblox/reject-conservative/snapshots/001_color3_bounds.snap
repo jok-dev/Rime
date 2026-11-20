@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+warning[R0801] (conservative): `Color3.new` takes channels from 0 to 1
+--> 11:19: a channel outside 0–1 clamps: this is not the color it reads as
+  = note: 0–255 channel values belong to `Color3.fromRGB`; `Color3.new(255, 0, 0)` happens to clamp to pure red, but mixed channels render as the wrong color entirely — every channel above 1 flattens to 1
+  = note: channels are clamped, not rejected, at runtime — Rime cannot rule out a deliberate out-of-range value feeding later math
+  = help: if these are 0–255 values: `Color3.fromRGB(255, 128, 0)`
+          Color3.fromRGB(255, 128, 0)

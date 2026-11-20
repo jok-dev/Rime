@@ -1,0 +1,22 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0304]: call to `log` has 2 arguments, but `log` takes 1
+--> 28:15: this argument is silently discarded
+    24:17: parameters declared here
+  = note: Luau discards extra arguments without a sound — usually a call site that predates a signature change
+  = help: remove the extra argument(s), or add parameters
+
+error[R0304]: call to `send` has 3 arguments, but no definition of `send` takes more than 2
+--> 30:19: this argument is silently discarded
+    13:3: this definition takes 1
+    17:3: this definition takes 2
+  = note: Luau discards extra arguments without a sound — usually a call site that predates a signature change
+  = help: remove the extra argument(s), or add parameters
+
+error[R0304]: call to `log` has 2 arguments, but `log` takes 1
+--> 32:14: this argument is silently discarded
+    24:17: parameters declared here
+  = note: Luau discards extra arguments without a sound — usually a call site that predates a signature change
+  = note: the last argument can expand to several values, and none of them is received
+  = help: remove the extra argument(s), or add parameters

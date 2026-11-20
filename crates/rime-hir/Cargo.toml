@@ -1,0 +1,12 @@
+[package]
+name = "rime-hir"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# Deliberately dependency-free: the HIR is the parser-agnostic seam. The
+# checker consumes only these types, so the parser (full-moon today, a
+# Luau.Ast shim if fidelity ever forces it) can be swapped by reimplementing
+# the lowering in rime-syntax without touching any analysis code.
+[dependencies]

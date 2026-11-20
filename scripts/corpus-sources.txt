@@ -1,0 +1,10 @@
+# One git URL per line, cloned by fetch-corpus.sh.
+#
+# Idiomatic community Luau:
+https://github.com/Sleitnick/Knit.git
+https://github.com/evaera/roblox-lua-promise.git
+https://github.com/Roblox/roact.git
+https://github.com/osyrisrblx/t.git
+#
+# Your own project — the one that actually matters. Add its path:
+# /path/to/your/project

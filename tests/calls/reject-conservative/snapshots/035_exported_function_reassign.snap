@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+error[R0305] (conservative): cannot reassign exported function `M.greet`
+--> 17:1: reassigned here
+    13:1: first defined here
+  = note: `M` is this module's export — module returns are require-cached and shared process-wide, so swapping a function on it changes behavior for every caller
+  = note: this may be deliberate late-binding that works today, but Rime cannot prove call sites stay valid once the slot changes
+  = help: define the final `M.greet` once, or route the varying behavior through a local variable

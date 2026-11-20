@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0306] (conservative): `gone` is not a member of this module's export `main`
+--> 25:7: no member of that name is defined in this file
+  = note: `main` is built in this file and never leaves it — its 4 members are known exactly, and `gone` is not one of them
+  = note: Rime treats a module's members as exactly what its own file defines; if another file adds this member at runtime, define it here instead
+
+error[R0306] (conservative): `inner` is not a member of this module's export `main`
+--> 27:7: no member of that name is defined in this file
+  = note: `main` is built in this file and never leaves it — its 4 members are known exactly, and `inner` is not one of them
+  = note: Rime treats a module's members as exactly what its own file defines; if another file adds this member at runtime, define it here instead

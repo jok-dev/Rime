@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 235
+---
+error[R0110]: the result of `pcall` is discarded
+--> 4:2: the success flag — and any error — vanish here
+  = note: `pcall` returns (ok: boolean, ...) — dropping it swallows the error
+  = help: capture the result — `local ok, err = pcall(...)` — and handle `not ok`

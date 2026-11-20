@@ -1,0 +1,30 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0706] (conservative): parentheses around the whole `if` condition
+--> 10:5: these parentheses change nothing
+  = note: `if` takes a bare expression: the keyword after it ends the condition
+  = note: valid Luau, and it runs the same either way — this is only about how the condition reads
+  = help: remove the parentheses
+          health <= 0
+
+warning[R0706] (conservative): parentheses around the whole `elseif` condition
+--> 13:9: these parentheses change nothing
+  = note: `elseif` takes a bare expression: the keyword after it ends the condition
+  = note: valid Luau, and it runs the same either way — this is only about how the condition reads
+  = help: remove the parentheses
+          shielded
+
+warning[R0706] (conservative): parentheses around the whole `while` condition
+--> 22:8: these parentheses change nothing
+  = note: `while` takes a bare expression: the keyword after it ends the condition
+  = note: valid Luau, and it runs the same either way — this is only about how the condition reads
+  = help: remove the parentheses
+          #queue > 0
+
+warning[R0706] (conservative): parentheses around the whole `until` condition
+--> 28:8: these parentheses change nothing
+  = note: `until` takes a bare expression: the keyword after it ends the condition
+  = note: valid Luau, and it runs the same either way — this is only about how the condition reads
+  = help: remove the parentheses
+          total < 10

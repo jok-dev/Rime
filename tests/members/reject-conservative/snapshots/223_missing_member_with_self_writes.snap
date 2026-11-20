@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0306] (conservative): `gone` is not a member of module `dep`
+--> 12:5: no such member on the module's interface
+  = note: the export of `dep.luau` is fully static — its 3 members are known exactly
+  = note: Rime treats required modules as sealed; if this member is populated at runtime, define it in the module's own file instead
+
+error[R0307] (conservative): `inner` is not a member of module `dep`
+--> 14:11: no such member on the module's interface
+  = note: the export of `dep.luau` is fully static — its 3 members are known exactly
+  = note: Rime treats required modules as sealed; if this member is populated at runtime, define it in the module's own file instead

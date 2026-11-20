@@ -1,0 +1,16 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0606] (conservative): the comparison is inside the `type` call
+--> 11:13: `type` receives the comparison's boolean result, not the value
+  = note: `type(x == "string")` always answers "boolean" — the intended check compares the call's RESULT to the string
+  = note: valid Luau — but taking the type of a comparison result is almost never what was meant
+  = help: move the comparison outside: `type(entry.state) == 'string'`
+          type(entry.state) == 'string'
+
+error[R0606] (conservative): the comparison is inside the `typeof` call
+--> 16:19: `typeof` receives the comparison's boolean result, not the value
+  = note: `typeof(x ~= "Instance")` always answers "boolean" — the intended check compares the call's RESULT to the string
+  = note: valid Luau — but taking the type of a comparison result is almost never what was meant
+  = help: move the comparison outside: `(typeof(tool:FindFirstChild("Handle", true)) ~= "Instance")`
+          (typeof(tool:FindFirstChild("Handle", true)) ~= "Instance")

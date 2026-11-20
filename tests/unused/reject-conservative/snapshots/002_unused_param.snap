@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0014] (conservative): parameter `punctuation` is never read
+--> 9:36: `punctuation` declared here
+  = note: never read in the function body or its closures; Rime cannot tell an oversight from a positional parameter kept for its slot
+  = help: use it, or rename to `_punctuation` if the position is required
+
+warning[R0014] (conservative): parameter `player` is never read
+--> 15:21: `player` declared here
+  = note: never read in the function body or its closures; Rime cannot tell an oversight from a positional parameter kept for its slot
+  = help: use it, or rename to `_player` if the position is required

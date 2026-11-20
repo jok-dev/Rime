@@ -1,0 +1,17 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0013] (conservative): `RETRIES` is never read
+--> 11:7: `RETRIES` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: delete it, or rename to `_RETRIES` if the binding is deliberate
+
+warning[R0015] (conservative): `describe` is never used
+--> 14:16: `describe` defined here
+  = note: nothing outside its own body references it, and self-recursion does not count as use
+  = help: call it, export it, or delete it
+
+warning[R0013] (conservative): `scratch` is never read
+--> 20:8: `scratch` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: delete it, or rename to `_scratch` if the binding is deliberate

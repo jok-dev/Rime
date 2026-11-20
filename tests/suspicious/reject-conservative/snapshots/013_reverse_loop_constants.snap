@@ -1,0 +1,16 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0605] (conservative): `for` from 8 down to 1 without a `-1` step
+--> 11:10: starts at 8 and counts UP (the default step is +1)
+  = note: start above end with a positive step: the body never runs — a countdown needs an explicit `-1` step
+  = note: valid Luau — a provably empty range is only ever deliberate as scaffolding
+  = help: add the step: `1, -1`
+          1, -1
+
+error[R0605] (conservative): `for` from 10 down to 2 without a `-1` step
+--> 21:10: starts at 10 and counts UP (the step is +2)
+  = note: start above end with a positive step: the body never runs — a countdown needs an explicit `-1` step
+  = note: valid Luau — a provably empty range is only ever deliberate as scaffolding
+  = help: make the step negative: `-2`
+          -2

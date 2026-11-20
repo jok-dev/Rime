@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0309] (conservative): export `b` of module `main` is never used
+--> 8:2: `b` exported here
+    extent: 8:2 to 8:8
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: the project has dynamic requires, so the bar is raised: `b` is flagged only because nothing in the project reads a member of that name off ANYTHING
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_b` if it is kept deliberately

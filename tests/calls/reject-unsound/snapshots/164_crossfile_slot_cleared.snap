@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0304]: call to `Mailer.send` has 2 arguments, but `Mailer.send` takes 1
+--> 13:22: this argument is silently discarded
+  = note: signature declared in Mailer.luau:6
+  = note: Luau discards extra arguments without a sound — usually a call site that predates a signature change
+  = help: remove the extra argument(s), or add parameters

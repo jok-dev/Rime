@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0013] (conservative): `totals` is written to, but never read
+--> 11:8: `totals` declared here
+    16:3: `totals` is only written to
+    18:2: `totals` is only written to
+  = note: every use of `totals` stores a field in it, and the table is never read or passed on, so nothing can see what was stored; Rime cannot tell leftover clutter from a table that was meant to be returned
+  = help: delete it and the writes to it, or rename to `_totals` if the binding is deliberate

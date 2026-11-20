@@ -1,0 +1,24 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0013] (conservative): `attempts` is assigned, but never read
+--> 10:7: `attempts` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: delete it AND its writes (each marked by R0016), or rename to `_attempts` if the binding is deliberate
+
+warning[R0016] (conservative): value assigned to `attempts` is never read
+--> 12:1: this write is dead
+  = note: `attempts` is never read anywhere in this function or its closures, so every store to it is dead; delete the binding and its writes together
+
+warning[R0013] (conservative): `lastNotified` is assigned, but never read
+--> 15:7: `lastNotified` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: delete it AND its writes (each marked by R0016), or rename to `_lastNotified` if the binding is deliberate
+
+warning[R0016] (conservative): value assigned to `lastNotified` is never read
+--> 19:2: this write is dead
+  = note: `lastNotified` is never read anywhere in this function or its closures, so every store to it is dead; delete the binding and its writes together
+
+warning[R0016] (conservative): value assigned to `lastNotified` is never read
+--> 24:2: this write is dead
+  = note: `lastNotified` is never read anywhere in this function or its closures, so every store to it is dead; delete the binding and its writes together

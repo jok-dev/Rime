@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+error[R0301]: call to `applyDamage` is missing argument 2 `amount`
+--> 9:12: `amount` gets nil here
+    4:56: `amount: number` declared here
+  = note: Luau fills missing arguments with nil, and `number` does not allow nil — the failure surfaces inside `applyDamage`, blaming the wrong code
+  = help: pass a `number` for `amount`

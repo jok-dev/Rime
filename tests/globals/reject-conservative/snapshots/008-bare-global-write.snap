@@ -1,0 +1,11 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+warning[R0024] (conservative): use of `shared` global state
+--> 2:1: global mutable state
+  = note: deliberate `_G`/`shared` use is valid Luau
+
+warning[R0024] (conservative): use of `_G` global state
+--> 3:1: global mutable state
+  = note: deliberate `_G`/`shared` use is valid Luau

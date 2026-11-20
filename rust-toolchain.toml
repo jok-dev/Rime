@@ -1,0 +1,6 @@
+[toolchain]
+# A fixed release, so a local build, the CI jobs and the three executables of
+# one release all come from the same compiler. To move to a newer Rust, change
+# the number here in a pull request and let CI build with it.
+channel = "1.94.0"
+components = ["rustfmt", "clippy"]

@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0202]: `entry` is checked for nil after it was already indexed
+--> 10:9: nil check here
+    9:18: `entry` is indexed here — throws if it is nil
+  = note: every path from the last assignment of `entry` to this check reaches the use first, so if `entry` can be nil the use throws and this check never runs
+  = help: move the check above the first use, or drop it if `entry` cannot be nil

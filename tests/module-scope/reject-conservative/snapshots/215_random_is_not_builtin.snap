@@ -1,0 +1,20 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0312] (conservative): `math.random` is called at module scope
+--> 10:14: runs when the module is first required
+  = note: a module's top level runs on the first `require`, before the requirer gets anything back: work there delays every requirer, and nothing declares its order
+  = note: valid Luau: which calls a module may make as it loads is this project's choice (`allow` under `[rules.module-scope-computation]` in rime.toml)
+  = help: move the call into a function, so it runs when something calls it
+
+warning[R0312] (conservative): `math.randomseed` is called at module scope
+--> 13:1: runs when the module is first required
+  = note: a module's top level runs on the first `require`, before the requirer gets anything back: work there delays every requirer, and nothing declares its order
+  = note: valid Luau: which calls a module may make as it loads is this project's choice (`allow` under `[rules.module-scope-computation]` in rime.toml)
+  = help: move the call into a function, so it runs when something calls it
+
+warning[R0312] (conservative): `BrickColor.random` is called at module scope
+--> 16:13: runs when the module is first required
+  = note: a module's top level runs on the first `require`, before the requirer gets anything back: work there delays every requirer, and nothing declares its order
+  = note: valid Luau: which calls a module may make as it loads is this project's choice (`allow` under `[rules.module-scope-computation]` in rime.toml)
+  = help: move the call into a function, so it runs when something calls it

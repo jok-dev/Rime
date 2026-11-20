@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0017] (conservative): `total` only feeds itself; its value is never used
+--> 7:8: `total` declared here
+  = note: it only accumulates into itself; nothing ever consumes the result
+  = note: every read of this binding flows back into the binding; Rime cannot tell abandoned code from work-in-progress
+  = help: use the value, or delete `total` and its self-feeding statements

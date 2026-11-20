@@ -1,0 +1,15 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 235
+---
+error[R0012] (conservative): duplicate key `speed` in table constructor
+--> 11:2: `speed` assigned again here
+    9:2: first assigned here
+  = note: the last value silently wins; the earlier entry is discarded before the table exists
+  = help: remove one of the `speed` entries, or assign the slot after construction if the overwrite is deliberate
+
+error[R0012] (conservative): duplicate key `mode` in table constructor
+--> 18:2: `mode` assigned again here
+    17:3: first assigned here
+  = note: the last value silently wins; the earlier entry is discarded before the table exists
+  = help: remove one of the `mode` entries, or assign the slot after construction if the overwrite is deliberate

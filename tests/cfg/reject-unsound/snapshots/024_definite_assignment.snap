@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+error[R0101]: `label` may be unassigned here
+--> 10:9: read while possibly unassigned
+    4:8: `label` declared here without a value
+  = note: some paths from the declaration assign `label`, but at least one does not
+  = help: initialize `label` at its declaration, or assign it on every branch

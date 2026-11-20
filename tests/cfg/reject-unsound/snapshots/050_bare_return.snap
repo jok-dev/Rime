@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 256
+---
+error[R0102]: `return` with no values in a function that declares them
+--> 9:3: the caller receives nil for every declared value
+    7:37: return type declared here
+  = help: return values here, or make the declared types optional

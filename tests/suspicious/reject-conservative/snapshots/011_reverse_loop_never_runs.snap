@@ -1,0 +1,16 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0605] (conservative): `for` from `#lines` down to -1 never runs
+--> 14:10: `#lines` is never below 0, so this range is empty
+  = note: a length is never negative, so the start sits above the end on every entry and the body never runs — a reverse walk needs an explicit `-1` step
+  = note: valid Luau — dead code unless `#` reaches a `__len` metamethod that returns a negative number
+  = help: count down to 1: `1, -1`
+          1, -1
+
+error[R0605] (conservative): `for` from `#lines` down to -1 never runs
+--> 26:10: `#lines` is never below 0, so this range is empty
+  = note: a length is never negative, so the start sits above the end on every entry and the body never runs — a reverse walk needs an explicit `-1` step
+  = note: valid Luau — dead code unless `#` reaches a `__len` metamethod that returns a negative number
+  = help: count down to 1: `1, -1`
+          1, -1

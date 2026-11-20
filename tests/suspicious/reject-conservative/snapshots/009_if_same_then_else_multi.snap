@@ -1,0 +1,14 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0603] (conservative): this branch matches the `else` branch
+--> 10:3: identical to the `else` fallback below
+    14:3: the same statements run here
+  = note: when this condition is true the branch does exactly what the fallback would do — either the branch was meant to differ, or its condition is unnecessary
+  = note: identical branches are valid — Rime cannot tell a copy-paste slip from a deliberate placeholder
+
+error[R0603] (conservative): this branch matches the `else` branch
+--> 12:3: identical to the `else` fallback below
+    14:3: the same statements run here
+  = note: when this condition is true the branch does exactly what the fallback would do — either the branch was meant to differ, or its condition is unnecessary
+  = note: identical branches are valid — Rime cannot tell a copy-paste slip from a deliberate placeholder

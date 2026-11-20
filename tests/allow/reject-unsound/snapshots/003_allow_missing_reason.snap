@@ -1,0 +1,13 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 319
+---
+error[R0011] (conservative): `count` shadows an earlier declaration
+--> 9:9: `count` declared again here
+    7:8: still in scope from here
+  = note: both bindings exist; later reads silently pick the inner one, and Rime cannot tell a deliberate rebind from a mistake
+  = help: rename one `count`, or prefix with `_` if the outer one is finished
+
+warning[R0021]: allow(`shadowing`) has no reason
+--> 9:19: in this directive
+  = note: every suppression must say why it is safe: `-- rime: allow(<rule>, "reason")`

@@ -1,0 +1,13 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+warning[R0702] (conservative): this `while` loop has an empty body
+--> 10:2: iterates and does nothing
+  = note: a condition-only loop with no effect in its header is a busy-wait at best and dead code at worst
+  = note: Rime does not read comments — a body holding only a comment still counts as empty
+
+warning[R0702] (conservative): this numeric `for` loop has an empty body
+--> 14:2: iterates and does nothing
+  = note: a condition-only loop with no effect in its header is a busy-wait at best and dead code at worst
+  = note: Rime does not read comments — a body holding only a comment still counts as empty

@@ -1,0 +1,13 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+error[R0608] (conservative): 2 names but 1 value
+--> 11:2: `second` becomes nil
+  = note: if the nils are intended, write them explicitly
+  = note: valid Luau — but a count mismatch with single-value expressions is usually an edit slip
+
+error[R0608] (conservative): 1 name but 2 values
+--> 17:2: the last 1 value is discarded
+  = note: every value still evaluates; only the results past the name count are dropped
+  = note: valid Luau — but a count mismatch with single-value expressions is usually an edit slip

@@ -1,0 +1,11 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0900]: could not parse this file as Luau: unexpected end of file
+--> 8:2: parsing stopped here
+    7:7: this `function` is never closed
+    9:3: this `if` is probably missing its `end`
+    13:2: this `end` lines up with the `if` on line 8, but closed the `if` on line 9
+  = note: expected `end` to close function body block
+  = note: indentation is a hint, not syntax: the first `end` shallower than the block it closes is where the pairing went wrong
+  = note: none of this file was checked

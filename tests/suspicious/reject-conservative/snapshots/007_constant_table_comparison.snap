@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+error[R0607] (conservative): comparison with a table constructor
+--> 11:9: always false — the constructor makes a fresh table
+  = note: `==` on tables compares identity, and a just-constructed table is never the same object; to test for emptiness use `next(t) == nil`, to compare contents compare fields
+  = note: an `__eq` metamethod on the other operand could make this meaningful; none is visible here

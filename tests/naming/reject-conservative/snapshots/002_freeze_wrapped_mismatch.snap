@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 129
+---
+warning[R0310] (conservative): module local `Wrong` should be named `main`
+--> 7:21: `Wrong` returned here, but the file is named `main`
+  = note: a module named after its file greps and reads the same everywhere it is required; downgrade `module-name-mismatch` in rime.toml if the convention is unwanted
+  = help: rename the local to `main` at its declaration and every use

@@ -1,0 +1,14 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0604] (conservative): this `elseif` repeats an earlier condition
+--> 10:9: already checked above
+    8:5: first checked here
+  = note: whenever this condition is true the earlier arm has already taken the branch, so this arm never runs
+  = note: valid Luau — the arm is unreachable unless an `__index` metamethod answers differently between the two checks
+
+error[R0604] (conservative): this `elseif` repeats an earlier condition
+--> 12:9: already checked above
+    8:5: first checked here
+  = note: whenever this condition is true the earlier arm has already taken the branch, so this arm never runs
+  = note: valid Luau — the arm is unreachable unless an `__index` metamethod answers differently between the two checks

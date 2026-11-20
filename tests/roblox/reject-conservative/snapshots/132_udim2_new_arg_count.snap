@@ -1,0 +1,20 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0804] (conservative): `UDim2.new` takes 4 numbers, but 2 were given
+--> 14:9: `yScale` and `yOffset` are left out, so they are 0
+  = note: the arguments are xScale, xOffset, yScale, yOffset, in that order: the first two set the X axis only
+  = note: the call runs, with 0 for every argument left out — Rime cannot tell a deliberate short form from a mix-up with `UDim2.fromScale` or `UDim2.fromOffset`
+  = help: for a scale on each axis use `UDim2.fromScale(x, y)`
+
+warning[R0804] (conservative): `UDim2.new` takes 4 numbers, but 2 were given
+--> 19:9: `yScale` and `yOffset` are left out, so they are 0
+  = note: the arguments are xScale, xOffset, yScale, yOffset, in that order: the first two set the X axis only
+  = note: the call runs, with 0 for every argument left out — Rime cannot tell a deliberate short form from a mix-up with `UDim2.fromScale` or `UDim2.fromOffset`
+  = help: for pixels on each axis use `UDim2.fromOffset(x, y)`
+
+warning[R0804] (conservative): `UDim2.new` takes 4 numbers, but 3 were given
+--> 24:9: `yOffset` is left out, so it is 0
+  = note: the arguments are xScale, xOffset, yScale, yOffset, in that order: the first two set the X axis only
+  = note: the call runs, with 0 for every argument left out — Rime cannot tell a deliberate short form from a mix-up with `UDim2.fromScale` or `UDim2.fromOffset`
+  = help: pass all four arguments, writing the 0s out if they are meant

@@ -1,0 +1,21 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0044]: unknown function attribute `@inline`
+--> 12:1: Luau has no attribute by this name
+  = note: Luau refuses to compile the file. The attributes it knows are `@native`, `@checked` and `@deprecated`
+
+error[R0044]: unknown function attribute `@Native`
+--> 18:1: Luau has no attribute by this name
+  = note: Luau refuses to compile the file. The attributes it knows are `@native`, `@checked` and `@deprecated`
+  = help: attribute names are lower case: `@native`
+
+error[R0044]: unknown function attribute `@memoize`
+--> 26:14: Luau has no attribute by this name
+  = note: Luau refuses to compile the file. The attributes it knows are `@native`, `@checked` and `@deprecated`
+
+error[R0044]: `@native` is given twice
+--> 31:9: this function already has the attribute
+    31:1: first given here
+  = note: Luau refuses to compile the file: an attribute can be given once per function
+  = help: remove the repeat

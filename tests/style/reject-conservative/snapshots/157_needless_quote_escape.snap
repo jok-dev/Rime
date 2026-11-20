@@ -1,0 +1,17 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0707] (conservative): `\'` needs no backslash in a double-quoted string
+--> 9:19: a plain `'` is the same string
+  = note: valid Luau: the string is the same with or without the backslash
+  = help: remove the backslash
+
+warning[R0707] (conservative): `\"` needs no backslash in a single-quoted string
+--> 11:21: a plain `"` is the same string
+  = note: valid Luau: the string is the same with or without the backslash
+  = help: remove the backslash
+
+warning[R0707] (conservative): `\"` needs no backslash in a single-quoted string
+--> 11:25: a plain `"` is the same string
+  = note: valid Luau: the string is the same with or without the backslash
+  = help: remove the backslash

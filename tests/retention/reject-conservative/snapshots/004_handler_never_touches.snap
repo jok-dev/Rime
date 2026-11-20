@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0802] (conservative): `lastSaved` holds every Player ever added and is never cleared in this module
+--> 13:7: strong keys: each entry keeps its Player object alive
+    20:2: first entry added here
+  = note: written with a Player key once, at line 20; nothing in this module removes an entry — no `nil` write, no `table.clear`, no reassignment, and the table never leaves the module
+  = note: the `PlayerRemoving` handler at line 24 never touches this table
+  = note: a retained dead Player also keeps every weak-keyed cache entry for it alive — clearing this table on PlayerRemoving releases those too
+  = note: valid Luau — deliberate only if entries are meant to live for the server's lifetime, or a consumer module clears them

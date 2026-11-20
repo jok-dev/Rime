@@ -1,0 +1,24 @@
+# Corpus cases that are red on purpose.
+#
+# Each case below specifies a rule that is not built yet, so it fails until
+# the rule lands. scripts/ci-test.sh, which CI runs, passes only when exactly
+# these cases fail:
+#
+#   - any other failing test fails the run;
+#   - a case listed here that passes also fails the run. Delete its line in
+#     the change that makes it pass.
+#
+# One case per line, as a path under tests/ with forward slashes.
+
+cfg/reject-unsound/030_constructor_missing_field.luau
+freeze/reject-unsound/003_frozen_into_mutable_param.luau
+freeze/reject-unsound/007_isfrozen_guard.luau
+freeze/reject-unsound/008_freeze_annotation_mismatch.luau
+narrowing/reject-conservative/021_field_narrowing.luau
+readonly/reject-unsound/017_readonly_return_write.luau
+readonly/reject-unsound/019_readonly_into_mutable_param.luau
+yields/reject-conservative/015_use_after_possible_destroy.luau
+yields/reject-unsound/016_yield_in_changed_handler.luau
+yields/reject-unsound/043_yield_transitive.luau
+yields/reject-unsound/044_bind_render_step_yield.luau
+yields/reject-unsound/045_property_signal_yield.luau

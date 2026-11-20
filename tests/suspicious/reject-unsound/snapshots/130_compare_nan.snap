@@ -1,0 +1,13 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0610]: comparison with NaN is always false
+--> 11:9: `==` against NaN is always false, whatever the value is
+  = note: NaN is not equal to any value, itself included, so `==` against it never matches and `~=` always does
+  = help: compare the value to itself, which is true only for NaN: `n ~= n`
+          n ~= n
+
+error[R0610]: comparison with NaN is always true
+--> 16:9: `~=` against NaN is always true, whatever the value is
+  = note: NaN is not equal to any value, itself included, so `==` against it never matches and `~=` always does
+  = help: to test for NaN compare the value to itself: `v == v` is false only for NaN

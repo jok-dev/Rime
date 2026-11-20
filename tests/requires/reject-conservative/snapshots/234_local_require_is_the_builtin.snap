@@ -1,0 +1,19 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0501] (conservative): cannot resolve this require
+--> 13:21: nothing exists at `script.Parent.gone`
+  = note: the path was followed through the project mounts and no module file is at the destination; if something puts an instance there at runtime, Rime cannot see it — downgrade `broken-require` if this pattern is deliberate
+  = note: if nothing creates it, this require throws (or waits forever) the moment the module loads
+  = help: fix the path, or add the missing module to the project
+
+error[R0306] (conservative): `okk` is not a member of module `lib`
+--> 16:5: no such member on the module's interface
+  = note: the export of `lib.luau` is fully static — its 1 member is known exactly
+  = note: Rime treats required modules as sealed; if this member is populated at runtime, define it in the module's own file instead
+
+error[R0501] (conservative): cannot resolve this require
+--> 22:16: nothing exists at `script.Parent.alsoGone`
+  = note: the path was followed through the project mounts and no module file is at the destination; if something puts an instance there at runtime, Rime cannot see it — downgrade `broken-require` if this pattern is deliberate
+  = note: if nothing creates it, this require throws (or waits forever) the moment the module loads
+  = help: fix the path, or add the missing module to the project

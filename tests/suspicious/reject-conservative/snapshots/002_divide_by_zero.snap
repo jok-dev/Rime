@@ -1,0 +1,13 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 214
+---
+warning[R0602] (conservative): division by zero
+--> 10:13: the divisor is a literal zero
+  = note: Luau raises no error here — the result is `inf`, `-inf`, or `nan`, which then spreads through every computation that touches it
+  = note: a literal zero divisor is occasionally a deliberate way to produce `inf` or `nan`; write `math.huge` or `0 / 0` if so — neither is reported
+
+warning[R0602] (conservative): modulo by zero
+--> 15:13: the divisor is a literal zero
+  = note: Luau raises no error here — the result is `nan`, which then spreads through every computation that touches it
+  = note: a literal zero divisor is occasionally a deliberate way to produce `inf` or `nan`; write `math.huge` or `0 / 0` if so — neither is reported

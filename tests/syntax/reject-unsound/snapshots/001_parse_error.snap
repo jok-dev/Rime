@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0900]: could not parse this file as Luau: unexpected token `local`
+--> 6:7: parsing stopped here
+  = note: expected either a variable name or `function`
+  = note: none of this file was checked

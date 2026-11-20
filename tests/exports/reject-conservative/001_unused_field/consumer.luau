@@ -1,0 +1,5 @@
+--!rime
+--!no-exec
+local Mod = require(script.Parent.main)
+
+print(Mod.used)

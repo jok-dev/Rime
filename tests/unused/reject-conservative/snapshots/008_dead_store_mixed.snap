@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0104] (conservative): value assigned to `s` is never read
+--> 7:8: this value is never read
+    9:3: `s` is overwritten here before any read
+  = note: no path reads this value: some paths overwrite it before any read, the rest reach the end of the function without reading it; the right-hand side still runs, only the stored result is dead
+  = help: assign where the value is first needed, or drop this store

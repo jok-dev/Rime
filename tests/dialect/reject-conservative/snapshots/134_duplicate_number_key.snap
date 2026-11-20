@@ -1,0 +1,30 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0703] (conservative): array items mixed with keyed fields
+--> 15:2: 2 positional item(s) alongside 1 keyed field(s)
+  = note: a table that is both an array and a map trips length (`#`), iteration order, and JSON encoding; split it into an array field and named fields
+  = note: valid Luau, and occasionally deliberate (an options table with a positional payload) — Rime cannot tell
+
+error[R0012] (conservative): duplicate key `2` in table constructor
+--> 17:3: `2` assigned again here
+    16:2: positional item 2 fills this slot first
+  = note: the last value silently wins; the earlier entry is discarded before the table exists
+  = help: remove the `[2]` key or the positional item, or assign the slot after construction if the overwrite is deliberate
+
+error[R0012] (conservative): duplicate key `16` in table constructor
+--> 24:3: `16` assigned again here
+    22:3: first assigned here
+  = note: the last value silently wins; the earlier entry is discarded before the table exists
+  = help: remove one of the `16` entries, or assign the slot after construction if the overwrite is deliberate
+
+warning[R0703] (conservative): array items mixed with keyed fields
+--> 29:3: 1 positional item(s) alongside 1 keyed field(s)
+  = note: a table that is both an array and a map trips length (`#`), iteration order, and JSON encoding; split it into an array field and named fields
+  = note: valid Luau, and occasionally deliberate (an options table with a positional payload) — Rime cannot tell
+
+error[R0012] (conservative): duplicate key `1` in table constructor
+--> 30:2: positional item 1 fills slot `1` again
+    29:3: first assigned here
+  = note: the last value silently wins; the earlier entry is discarded before the table exists
+  = help: remove the `[1]` key or the positional item, or assign the slot after construction if the overwrite is deliberate

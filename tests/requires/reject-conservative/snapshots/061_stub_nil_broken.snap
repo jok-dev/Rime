@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 180
+---
+error[R0501] (conservative): cannot resolve this require
+--> 7:30: nothing exists at `script.Parent.Ghost`
+  = note: the path was followed through the project mounts and no module file is at the destination; if something puts an instance there at runtime, Rime cannot see it — downgrade `broken-require` if this pattern is deliberate
+  = note: guarded by `nil and`, this require never runs — nothing throws at runtime, but the path points at nothing: a dead reference
+  = help: fix the path, or delete the stub

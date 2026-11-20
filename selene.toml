@@ -1,0 +1,3 @@
+# Corpus cases are Luau (type annotations, string interpolation), not vanilla
+# Lua — without this, editor selene floods every test file with parse errors.
+std = "luau"

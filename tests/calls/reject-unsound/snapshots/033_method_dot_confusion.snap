@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+error[R0303]: `Shop.buy` is a method — call it with `:`
+--> 10:9: called with `.` here, so the first argument lands in `self`
+    6:1: declared with `:` here
+  = note: a `:` declaration takes an implicit self; dot-calling it shifts every argument left by one
+  = help: call it as `Shop:buy(...)`

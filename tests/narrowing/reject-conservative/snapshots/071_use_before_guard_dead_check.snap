@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0202] (conservative): `part` is checked for nil after it was already indexed
+--> 13:5: nil check here
+    12:15: `part` is indexed here — throws if it is nil
+  = note: `part` is declared with a type that excludes nil, so the use cannot throw and this check can never fire — a dead check is a misunderstanding waiting for the type to widen
+  = help: drop the check, or widen the type to `T?` and move the check above the first use

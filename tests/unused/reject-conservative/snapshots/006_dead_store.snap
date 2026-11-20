@@ -1,0 +1,14 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0104] (conservative): value assigned to `x` is never read
+--> 10:8: this value is never read
+    12:2: `x` is overwritten here before any read
+  = note: every path from this assignment overwrites the value before any read; the right-hand side still runs, only the stored result is dead
+  = help: assign where the value is first needed, or drop this store
+
+warning[R0104] (conservative): value assigned to `result` is never read
+--> 17:8: this value is never read
+    20:3: `result` is overwritten here before any read
+  = note: every path from this assignment overwrites the value before any read; the right-hand side still runs, only the stored result is dead
+  = help: assign where the value is first needed, or drop this store

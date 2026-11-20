@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+error[R0605] (conservative): `for` from `#items` down to 1 without a `-1` step
+--> 11:10: starts at `#items` and counts UP (the default step is +1)
+  = note: counting up from a length to 1, the body never runs when the table holds more than one element — a reverse walk needs an explicit `-1` step
+  = note: valid Luau — deliberate only if the table is known to hold at most one element
+  = help: add the step: `1, -1`
+          1, -1

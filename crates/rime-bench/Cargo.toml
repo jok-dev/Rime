@@ -1,0 +1,48 @@
+[package]
+name = "rime-bench"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+full_moon.workspace = true
+mlua.workspace = true
+walkdir.workspace = true
+rime-syntax.workspace = true
+rime-hir.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_System_ProcessStatus",
+    "Win32_System_Threading",
+] }
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "parse"
+harness = false
+
+[[bin]]
+name = "rime-fidelity"
+path = "src/bin/fidelity.rs"
+
+[[bin]]
+name = "rime-rss"
+path = "src/bin/rss.rs"
+
+[[bin]]
+name = "rime-survey"
+path = "src/bin/survey.rs"
+
+[[bin]]
+name = "rime-faint-survey"
+path = "src/bin/faint_survey.rs"
+
+[[bin]]
+name = "rime-module-scope-survey"
+path = "src/bin/module_scope_survey.rs"

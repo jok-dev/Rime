@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0104] (conservative): value assigned to `prefix` is never read
+--> 20:4: this value is never read
+    16:9: `prefix` is overwritten here on the next loop iteration
+  = note: no path reads this value: the next loop iteration overwrites it before any read; the right-hand side still runs, only the stored result is dead
+  = help: assign where the value is first needed, or drop this store

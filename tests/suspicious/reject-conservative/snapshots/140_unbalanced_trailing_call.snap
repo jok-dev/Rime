@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0608] (conservative): 1 name but 2 values
+--> 18:2: the last 1 value is discarded: the call still runs, and every result it returns is dropped
+  = note: every value still evaluates; only the results past the name count are dropped
+  = note: valid Luau — but a count mismatch with single-value expressions is usually an edit slip

@@ -1,0 +1,13 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 319
+---
+warning[R0021]: `allow-file` must appear before any code
+--> 7:2: in this directive
+  = note: move it to the top of the file, alone on its line — only comments and blank lines may precede a file-level allow
+
+error[R0011] (conservative): `count` shadows an earlier declaration
+--> 10:9: `count` declared again here
+    6:8: still in scope from here
+  = note: both bindings exist; later reads silently pick the inner one, and Rime cannot tell a deliberate rebind from a mistake
+  = help: rename one `count`, or prefix with `_` if the outer one is finished

@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0900]: could not parse this file as Luau: unexpected token `const`
+--> 7:1: parsing stopped here
+  = note: const declaration must have an assignment
+  = note: none of this file was checked

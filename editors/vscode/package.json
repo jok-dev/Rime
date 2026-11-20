@@ -1,0 +1,87 @@
+{
+  "name": "rime-vscode",
+  "displayName": "Rime",
+  "description": "Strict Luau static checking via the rime CLI",
+  "version": "0.1.3",
+  "publisher": "jok",
+  "private": true,
+  "license": "MPL-2.0",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Linters", "Programming Languages"],
+  "activationEvents": [
+    "onLanguage:luau",
+    "onLanguage:lua",
+    "workspaceContains:**/*.luau"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "luau",
+        "aliases": ["Luau", "luau"],
+        "extensions": [".luau", ".lua"],
+        "configuration": "./language-configuration.json",
+        "icon": { "light": "./icons/luau.svg", "dark": "./icons/luau.svg" }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "luau",
+        "scopeName": "source.luau",
+        "path": "./syntaxes/luau.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      { "command": "rime.check", "title": "Rime: Check Workspace" },
+      { "command": "rime.restartServer", "title": "Rime: Restart Language Server" }
+    ],
+    "configuration": {
+      "title": "Rime",
+      "properties": {
+        "rime.mode": {
+          "type": "string",
+          "enum": ["lsp", "spawn"],
+          "default": "lsp",
+          "enumDescriptions": [
+            "Long-lived `rime lsp` server: warm state, check-on-type, quick fixes.",
+            "Run `rime check --format json .` per save (tier-1 fallback)."
+          ],
+          "description": "How the extension talks to rime. Reload the window after changing."
+        },
+        "rime.path": {
+          "type": "string",
+          "default": "rime",
+          "description": "Path to the rime executable."
+        },
+        "rime.checkOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "(spawn mode only) Run rime check over the workspace when a .luau/.lua file is saved."
+        },
+        "rime.watchFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "(spawn mode only) Also re-check when .lua/.luau files, rime.toml, a Rojo project file (*.project.json) or .luaurc change on disk outside the editor (git checkout, Rojo, another editor)."
+        },
+        "rime.debounceMs": {
+          "type": "number",
+          "default": 100,
+          "description": "Wait this long after the last save/file change before running rime, so a burst of changes becomes one run (spawn mode), or the server's own debounce window (lsp mode, passed at startup — reload the window after changing). A check still running when a new change lands is killed and restarted."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test \"out/test/*.test.js\""
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,17 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0708] (conservative): the result of `math.min` is not used
+--> 11:2: this call only computes a value, and the value is dropped
+  = note: the call still runs: an argument can have side effects, and the call can be there to throw
+  = help: use the result, or remove the call
+
+warning[R0708] (conservative): the result of `string.format` is not used
+--> 13:2: this call only computes a value, and the value is dropped
+  = note: the call still runs: an argument can have side effects, and the call can be there to throw
+  = help: use the result, or remove the call
+
+warning[R0708] (conservative): the result of `tostring` is not used
+--> 16:3: this call only computes a value, and the value is dropped
+  = note: the call still runs: an argument can have side effects, and the call can be there to throw
+  = help: use the result, or remove the call

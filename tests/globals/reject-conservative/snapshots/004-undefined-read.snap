@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 319
+---
+warning[R0013] (conservative): `total` is never read
+--> 2:7: `total` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: delete it, or rename to `_total` if the binding is deliberate
+
+error[R0022] (conservative): `totl` is not defined
+--> 3:7: not a local, not a known global
+  = note: code that runs earlier could create this global at runtime

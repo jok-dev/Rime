@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 180
+---
+error[R0506] (conservative): this module is never loaded — `Economy` is always `nil`
+--> 6:32: guarded by `nil and`, this require never runs
+  = note: the lazy-require idiom needs a live assignment (`Economy = require(...)`) somewhere in the file; there is none, so every use of `Economy` sees `nil`
+  = help: add the live require, or delete the stub if the feature is dead

@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0704] (conservative): manual shallow copy
+--> 12:2: copies `source` one entry at a time
+  = note: `table.clone` does this in one call, faster and without the loop: `const copy = table.clone(...)`
+  = note: the spelled-out loop is valid — worth keeping only if entries need filtering or transforming, which this one does not do

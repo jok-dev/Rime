@@ -1,0 +1,19 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0611] (conservative): `\U` is not an escape sequence
+--> 10:17: Luau drops the backslash: this is a plain `U`
+  = note: the file compiles, and Rime cannot tell whether the backslash was meant to be part of the string
+  = help: write `\\U` to keep the backslash, or `U` alone to say what Luau reads
+
+error[R0611] (conservative): `\.` is not an escape sequence
+--> 12:41: Luau drops the backslash: this is a plain `.`
+  = note: the file compiles, and Rime cannot tell whether the backslash was meant to be part of the string
+  = help: write `\\.` to keep the backslash, or `.` alone to say what Luau reads
+  = help: if this string is a pattern, its escape character is `%`: `%.`
+
+error[R0611] (conservative): `\d` is not an escape sequence
+--> 14:37: Luau drops the backslash: this is a plain `d`
+  = note: the file compiles, and Rime cannot tell whether the backslash was meant to be part of the string
+  = help: write `\\d` to keep the backslash, or `d` alone to say what Luau reads
+  = help: if this string is a pattern, its escape character is `%`: `%d`

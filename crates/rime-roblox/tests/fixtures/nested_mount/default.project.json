@@ -1,0 +1,13 @@
+{
+  "name": "nested-mount-fixture",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "$path": "src/ReplicatedStorage",
+      "Widgets": {
+        "$path": "vendor/Widgets"
+      }
+    }
+  }
+}

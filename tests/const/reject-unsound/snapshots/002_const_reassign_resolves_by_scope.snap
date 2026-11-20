@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0043]: cannot assign to `rate`, it is declared `const`
+--> 24:3: assigned here
+    9:7: `rate` declared `const` here
+  = note: Luau refuses to compile a file that assigns to a `const` binding, so the whole script fails to load, not only this statement
+  = help: declare `rate` with `local` if it has to change, or keep the new value under another name

@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 234
+---
+warning[R0308] (conservative): dynamic write to required module `dep`
+--> 8:1: written from outside the module
+  = note: a module's members belong to its own file — populating or patching it from a consumer creates hidden coupling and defeats member checking
+  = note: Rime treats required modules as sealed; move the state or member into the module that owns it

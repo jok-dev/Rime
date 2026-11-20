@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 200
+---
+error[R0041]: cannot write to a frozen table
+--> 5:1: `t` is frozen when this write runs
+    4:1: `t` frozen here
+  = note: frozen at line 4: `table.freeze` freezes the table itself, so every binding to it — not just the one in the freeze call — rejects writes from then on
+  = help: move this write before the freeze, or copy first with `table.clone(t)` and write to the copy

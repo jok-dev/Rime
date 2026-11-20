@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    # main only. Any other branch is tested through its pull request, so a
+    # push to a branch with an open pull request starts one run, not two. A
+    # tag push is tested by release.yml, which calls this workflow before it
+    # publishes anything.
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+# A new push to a pull request cancels the run of the push before it. Every
+# other run is in a group of its own, so each commit on main is tested to the
+# end and none waits behind another.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # Ubuntu by number, not ubuntu-latest: GitHub is moving that label to
+        # 26.04, whose C++ compiler has not built the Luau VM or mimalloc
+        # here yet. Move to a newer image in a pull request. release.yml
+        # builds rime-linux on ubuntu-22.04, which GitHub removes on
+        # 17 April 2027; see the comment on that row there.
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    steps:
+      # Git for Windows turns LF into CRLF on checkout by default, and the
+      # corpus case that continues a string across lines with `\z` fails on
+      # CRLF. Check files out as committed.
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the toolchain named in rust-toolchain.toml
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustc -vV
+          cargo -V
+
+      # Every run restores the cache; only a run on main saves one. A pull
+      # request or a tag reads main's caches. One saved from a pull request
+      # or a tag could be read by that pull request or tag alone, and would
+      # push main's entries out of the repository's cache quota.
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Check every target, benches included
+        run: cargo check --workspace --all-targets --locked
+
+      - name: Build the tests
+        run: cargo test --workspace --locked --no-run
+
+      # `cargo test` exits non-zero on purpose: the corpus cases listed in
+      # tests/expected-red.txt specify rules that are not built yet. The
+      # script passes only when exactly those cases fail.
+      - name: Run the tests
+        run: bash scripts/ci-test.sh

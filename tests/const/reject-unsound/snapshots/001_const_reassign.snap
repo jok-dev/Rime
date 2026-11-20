@@ -1,0 +1,38 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0043]: cannot assign to `LIMIT`, it is declared `const`
+--> 20:1: assigned here
+    12:7: `LIMIT` declared `const` here
+  = note: Luau refuses to compile a file that assigns to a `const` binding, so the whole script fails to load, not only this statement
+  = help: declare `LIMIT` with `local` if it has to change, or keep the new value under another name
+
+error[R0043]: cannot assign to `LIMIT`, it is declared `const`
+--> 23:1: assigned here
+    12:7: `LIMIT` declared `const` here
+  = note: Luau refuses to compile a file that assigns to a `const` binding, so the whole script fails to load, not only this statement
+  = help: declare `LIMIT` with `local` if it has to change, or keep the new value under another name
+
+error[R0043]: cannot assign to `LIMIT`, it is declared `const`
+--> 26:8: assigned here
+    12:7: `LIMIT` declared `const` here
+  = note: Luau refuses to compile a file that assigns to a `const` binding, so the whole script fails to load, not only this statement
+  = help: declare `LIMIT` with `local` if it has to change, or keep the new value under another name
+
+error[R0043]: cannot assign to `LIMIT`, it is declared `const`
+--> 30:2: assigned here
+    12:7: `LIMIT` declared `const` here
+  = note: Luau refuses to compile a file that assigns to a `const` binding, so the whole script fails to load, not only this statement
+  = help: declare `LIMIT` with `local` if it has to change, or keep the new value under another name
+
+error[R0043]: cannot assign to `handler`, it is declared `const`
+--> 35:1: assigned here
+    13:16: `handler` declared `const` here
+  = note: Luau refuses to compile a file that assigns to a `const` binding, so the whole script fails to load, not only this statement
+  = help: declare `handler` with `local` if it has to change, or keep the new value under another name
+
+error[R0043]: cannot assign to `handler`, it is declared `const`
+--> 41:1: assigned here
+    13:16: `handler` declared `const` here
+  = note: Luau refuses to compile a file that assigns to a `const` binding, so the whole script fails to load, not only this statement
+  = help: declare `handler` with `local` if it has to change, or keep the new value under another name

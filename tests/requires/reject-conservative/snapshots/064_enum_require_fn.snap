@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 180
+---
+error[R0508] (conservative): require target is a loop variable over a folder's children
+--> 8:29: each child of the folder is required here
+  = note: the loop requires whatever the folder holds at runtime; Rime does not yet enumerate mounted folders statically — downgrade `enumeration-require` in rime.toml if this registry pattern is deliberate
+  = help: keep the loop and downgrade `enumeration-require`, or require each module statically

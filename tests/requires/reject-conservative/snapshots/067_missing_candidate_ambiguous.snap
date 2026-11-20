@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 180
+---
+error[R0501] (conservative): cannot resolve this require
+--> 5:21: nothing exists at `script.Parent.Old.Maid`
+  = note: the path was followed through the project mounts and no module file is at the destination; if something puts an instance there at runtime, Rime cannot see it — downgrade `broken-require` if this pattern is deliberate
+  = note: if nothing creates it, this require throws (or waits forever) the moment the module loads
+  = note: modules named `Maid` exist at `script.Parent.A.Maid`, `script.Parent.B.Maid` — the path may have rotted, not the module
+  = help: fix the path, or add the missing module to the project

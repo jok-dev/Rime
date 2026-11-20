@@ -1,0 +1,17 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0022]: `...` is not defined in this function
+--> 14:9: this function's parameter list has no `...`
+  = note: Luau refuses to compile the file: `...` can be read only in the function that declares it, and at the top level of a file
+  = help: add `...` to this function's parameters; an enclosing function's `...` does not reach in here, so capture it outside first (`local args = table.pack(...)`)
+
+error[R0022]: `...` is not defined in this function
+--> 20:18: this function's parameter list has no `...`
+  = note: Luau refuses to compile the file: `...` can be read only in the function that declares it, and at the top level of a file
+  = help: add `...` to this function's parameters; an enclosing function's `...` does not reach in here, so capture it outside first (`local args = table.pack(...)`)
+
+error[R0022]: `...` is not defined in this function
+--> 26:21: this function's parameter list has no `...`
+  = note: Luau refuses to compile the file: `...` can be read only in the function that declares it, and at the top level of a file
+  = help: add `...` to this function's parameters; an enclosing function's `...` does not reach in here, so capture it outside first (`local args = table.pack(...)`)

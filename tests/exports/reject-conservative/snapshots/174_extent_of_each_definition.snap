@@ -1,0 +1,76 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0309] (conservative): export `field` of module `main` is never used
+--> 17:2: `field` exported here
+    extent: 17:2 to 17:19
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_field` if it is kept deliberately
+
+warning[R0309] (conservative): export `last` of module `main` is never used
+--> 18:2: `last` exported here
+    extent: 18:2 to 18:12
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_last` if it is kept deliberately
+
+warning[R0309] (conservative): export `LIMIT` of module `main` is never used
+--> 23:6: `LIMIT` exported here
+    extent: 23:1 to 23:15
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_LIMIT` if it is kept deliberately
+
+warning[R0309] (conservative): export `handler` of module `main` is never used
+--> 26:6: `handler` exported here
+    extent: 26:1 to 28:4
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_handler` if it is kept deliberately
+
+warning[R0309] (conservative): export `run` of module `main` is never used
+--> 32:15: `run` exported here
+    extent: 32:1 to 35:4
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_run` if it is kept deliberately
+
+warning[R0309] (conservative): export `step` of module `main` is never used
+--> 38:15: `step` exported here
+    extent: 38:1 to 38:25
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_step` if it is kept deliberately
+
+warning[R0309] (conservative): export `mode` of module `main` is never used
+--> 42:7: `mode` exported here
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_mode` if it is kept deliberately
+
+warning[R0309] (conservative): export `left` of module `main` is never used
+--> 48:6: `left` exported here
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_left` if it is kept deliberately
+
+warning[R0309] (conservative): export `right` of module `main` is never used
+--> 48:17: `right` exported here
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_right` if it is kept deliberately
+
+warning[R0309] (conservative): export `TIMEOUT` of module `main` is never used
+--> 52:6: `TIMEOUT` exported here
+    extent: 52:1 to 52:18
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_TIMEOUT` if it is kept deliberately
+
+warning[R0309] (conservative): export `stop` of module `main` is never used
+--> 55:15: `stop` exported here
+    extent: 55:1 to 55:26
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_stop` if it is kept deliberately

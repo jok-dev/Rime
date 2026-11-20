@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0803] (conservative): `Mailbox.unread` is weak-keyed but holds its values for every Player ever added, and is never cleared in this module
+--> 13:9: weak keys: each entry keeps its value alive while the Player is reachable anywhere
+    19:3: first entry added here
+  = note: written with a Player key once, at line 19; nothing in this module removes an entry — no `nil` write, no `table.clear`, no reassignment, and the table never leaves the module
+  = note: no `PlayerRemoving` handler in this module
+  = note: `__mode = "k"` is not a teardown: the table does not hold the Player, but an entry lives as long as its Player object is reachable from anywhere — and a Player retained elsewhere keeps every value here alive with it
+  = note: valid Luau — deliberate only if entries are meant to live for the server's lifetime, or a consumer module clears them

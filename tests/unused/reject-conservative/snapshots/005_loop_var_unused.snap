@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0013] (conservative): `v` is never read
+--> 10:9: `v` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: rename to `_v` if the slot is required
+
+warning[R0013] (conservative): `i` is never read
+--> 14:6: `i` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: rename to `_i` if the slot is required

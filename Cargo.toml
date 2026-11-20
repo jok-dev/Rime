@@ -1,0 +1,47 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2021"
+license = "MPL-2.0"
+repository = "https://github.com/jok-dev/Rime"
+
+[workspace.dependencies]
+rime-syntax = { path = "crates/rime-syntax" }
+rime-hir    = { path = "crates/rime-hir" }
+rime-check  = { path = "crates/rime-check" }
+rime-diag   = { path = "crates/rime-diag" }
+rime-roblox = { path = "crates/rime-roblox" }
+rime-std    = { path = "crates/rime-std" }
+rime-custom = { path = "crates/rime-custom" }
+globset = "0.4"
+ignore  = "0.4"
+
+full_moon      = { version = "3", features = ["luau"] }
+ariadne        = "0.5"
+insta          = { version = "1", features = ["filters"] }
+libtest-mimic  = "0.8"
+criterion      = { version = "0.5", features = ["html_reports"] }
+rayon          = "1"
+anyhow         = "1"
+clap           = { version = "4", features = ["derive"] }
+walkdir         = "2"
+toml           = "0.8"
+serde          = { version = "1", features = ["derive"] }
+serde_json     = "1"
+
+# `vendored` builds Luau from source via cc. This is the parse oracle and the
+# differential runner for tests/accept — see docs in rime-bench.
+mlua = { version = "0.10", features = ["luau", "vendored"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+debug = 1        # keep symbols for profiling
+
+[profile.bench]
+lto = "thin"
+codegen-units = 1
+debug = 1

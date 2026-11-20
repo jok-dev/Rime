@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0900]: cannot check this file: `if local` bindings are experimental Luau syntax that Rime does not understand yet
+--> 14:5: used here
+  = note: `entry` is declared inside the condition, which Rime's model of an `if` has no place for; until it does, declare `entry` on the line before the `if` and test it there
+  = note: none of this file was checked

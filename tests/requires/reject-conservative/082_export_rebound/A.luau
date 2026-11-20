@@ -1,0 +1,2 @@
+--!rime
+return { value = "a" }

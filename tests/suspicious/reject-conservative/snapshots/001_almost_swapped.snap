@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 214
+---
+error[R0601] (conservative): `a` and `b` do not swap
+--> 11:2: `a` already holds `b`'s value, so this is a no-op
+    9:2: `a` takes `b`'s value here
+  = note: after the first assignment both names hold `b`'s value; `a`'s original value is lost
+  = note: valid Luau — but the second assignment does nothing, which is almost never what was meant
+  = help: swap in one statement: `a, b = b, a`

@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0201] (conservative): `data` may be nil
+--> 11:9: `data` is indexed here
+  = note: `data` is declared with a type that admits nil, but nothing on this path claims nil — the value it holds here came from a call or expression Rime cannot classify
+  = help: guard the use: `if data ~= nil then ... end`, or bind the value to a local declared without `?`

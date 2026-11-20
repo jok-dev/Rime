@@ -1,0 +1,20 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 319
+---
+warning[R0024] (conservative): use of `_G` global state
+--> 2:1: global mutable state
+  = note: deliberate `_G`/`shared` use is valid Luau
+
+warning[R0024] (conservative): use of `_G` global state
+--> 3:7: global mutable state
+  = note: deliberate `_G`/`shared` use is valid Luau
+
+warning[R0013] (conservative): `x` is never read
+--> 4:7: `x` declared here
+  = note: never read anywhere in this function or its closures; Rime cannot tell leftover clutter from a mistyped name
+  = help: delete it, or rename to `_x` if the binding is deliberate
+
+warning[R0024] (conservative): use of `shared` global state
+--> 4:11: global mutable state
+  = note: deliberate `_G`/`shared` use is valid Luau

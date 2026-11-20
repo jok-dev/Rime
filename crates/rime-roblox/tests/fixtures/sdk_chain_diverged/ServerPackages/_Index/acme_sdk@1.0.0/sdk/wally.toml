@@ -1,0 +1,4 @@
+[package]
+name = "acme/sdk"
+version = "1.0.0"
+realm = "server"

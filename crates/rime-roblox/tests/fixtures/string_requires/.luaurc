@@ -1,0 +1,13 @@
+{
+  // Luau reads this file with comments and trailing commas.
+  "languageMode": "strict",
+  "aliases": {
+    "Shared": "./src/shared",
+    "Util": "./src/shared/util",
+    "Chain": "@Shared/util",
+    "File": "./src/shared/alpha.luau",
+    "Gone": "./not-installed",
+    "Home": "~/.tool/defs/",
+    "Loop": "@Loop/x",
+  },
+}

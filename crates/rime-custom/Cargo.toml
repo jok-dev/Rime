@@ -1,0 +1,18 @@
+[package]
+name = "rime-custom"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# Custom project rules: Luau rule files run in one sandboxed VM over a Lua
+# view of each file's HIR. Kept out of rime-check so mlua stays a
+# dev-only dependency there.
+[dependencies]
+mlua.workspace = true
+rime-hir.workspace = true
+rime-diag.workspace = true
+globset.workspace = true
+
+[dev-dependencies]
+rime-syntax.workspace = true

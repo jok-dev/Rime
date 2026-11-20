@@ -1,0 +1,16 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0601] (conservative): `t[i]` and `t[j]` do not swap
+--> 13:2: `t[i]` already holds `t[j]`'s value, so this is a no-op
+    11:2: `t[i]` takes `t[j]`'s value here
+  = note: after the first assignment both hold `t[j]`'s value; `t[i]`'s original value is lost
+  = note: valid Luau — but unless an `__index` or `__newindex` metamethod steps in, the second assignment does nothing, which is almost never what was meant
+  = help: swap in one statement: `t[i], t[j] = t[j], t[i]`
+
+error[R0601] (conservative): `box.left` and `box.right` do not swap
+--> 19:2: `box.left` already holds `box.right`'s value, so this is a no-op
+    17:2: `box.left` takes `box.right`'s value here
+  = note: after the first assignment both hold `box.right`'s value; `box.left`'s original value is lost
+  = note: valid Luau — but unless an `__index` or `__newindex` metamethod steps in, the second assignment does nothing, which is almost never what was meant
+  = help: swap in one statement: `box.left, box.right = box.right, box.left`

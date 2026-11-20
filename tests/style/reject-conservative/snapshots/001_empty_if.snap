@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 265
+---
+warning[R0701] (conservative): the `then` arm of this `if` is empty
+--> 10:2: an empty arm runs nothing
+  = note: either the arm is missing its logic, or the condition can fold into the arms that remain (an empty `then` inverts to `if not ...`)
+  = note: Rime does not read comments — an arm holding only an explanatory comment still counts as empty; drop the arm or suppress with `-- rime: allow(empty-if, ...)`

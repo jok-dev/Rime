@@ -1,0 +1,32 @@
+[package]
+name = "rime-check"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+# Parser firewall: no full_moon here, ever. Analyses see rime-hir only;
+# rime-syntax appears solely for the parse entry point in check_source.
+[dependencies]
+rime-syntax.workspace = true
+rime-hir.workspace = true
+rime-diag.workspace = true
+rime-std.workspace = true
+rayon.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+libtest-mimic.workspace = true
+walkdir.workspace = true
+mlua.workspace = true
+
+[[test]]
+name = "corpus"
+harness = false
+
+# Differential runner (plan §8): executes every tests/accept case under real
+# Luau via mlua. The theorem is "checks clean => cannot raise a runtime type
+# error"; this target is the only test that tests the claim.
+[[test]]
+name = "differential"
+harness = false

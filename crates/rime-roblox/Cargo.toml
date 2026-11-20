@@ -1,0 +1,17 @@
+[package]
+name = "rime-roblox"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+serde_json.workspace = true
+rime-hir.workspace = true
+rime-check.workspace = true
+
+# The end-to-end SDK-chain tests drive a real `rime_check::Session`, which
+# needs the bundled Roblox std name set the CLI feeds it.
+[dev-dependencies]
+rime-std.workspace = true

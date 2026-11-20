@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 256
+---
+error[R0102]: not all paths return a value
+--> 8:1: control can fall off this `end` without returning
+    3:36: return type declared here
+  = note: in Luau, falling off the end of a function silently returns nil
+  = help: return a value on every path

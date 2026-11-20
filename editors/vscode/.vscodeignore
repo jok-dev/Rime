@@ -1,0 +1,8 @@
+src/**
+tsconfig.json
+out/test/**
+.gitignore
+**/*.map
+# Do NOT add node_modules/** here: vsce already prunes devDependencies on
+# its own, and the runtime dependency vscode-languageclient (plus its
+# transitive deps) has to ship inside the vsix or lsp mode can't load.

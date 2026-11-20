@@ -1,0 +1,14 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0022] (conservative): `LIMIT` is not defined
+--> 15:9: not a local, not a known global
+  = note: code that runs earlier could create this global at runtime
+
+error[R0022] (conservative): `inner` is not defined
+--> 26:9: not a local, not a known global
+  = note: code that runs earlier could create this global at runtime
+
+error[R0022] (conservative): `depth` is not defined
+--> 31:16: not a local, not a known global
+  = note: code that runs earlier could create this global at runtime

@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 150
+---
+error[R0301]: call to `dep.grant` is missing argument 3 `reason`
+--> 8:14: `reason` gets nil here
+  = note: signature declared in dep.luau:5
+  = note: Luau fills missing arguments with nil, and `string` does not allow nil — the failure surfaces inside `dep.grant`, blaming the wrong code
+  = help: pass a `string` for `reason`

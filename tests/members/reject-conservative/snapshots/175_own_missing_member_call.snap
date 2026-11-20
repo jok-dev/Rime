@@ -1,0 +1,17 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0306] (conservative): `stop` is not a member of this module's export `main`
+--> 12:7: no member of that name is defined in this file
+  = note: `main` is built in this file and never leaves it — its 3 members are known exactly, and `stop` is not one of them
+  = note: Rime treats a module's members as exactly what its own file defines; if another file adds this member at runtime, define it here instead
+
+error[R0306] (conservative): `reset` is not a member of this module's export `main`
+--> 15:7: no member of that name is defined in this file
+  = note: `main` is built in this file and never leaves it — its 3 members are known exactly, and `reset` is not one of them
+  = note: Rime treats a module's members as exactly what its own file defines; if another file adds this member at runtime, define it here instead
+
+error[R0306] (conservative): `stop` is not a member of this module's export `main`
+--> 21:14: no member of that name is defined in this file
+  = note: `main` is built in this file and never leaves it — its 3 members are known exactly, and `stop` is not one of them
+  = note: Rime treats a module's members as exactly what its own file defines; if another file adds this member at runtime, define it here instead

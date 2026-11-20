@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 235
+---
+error[R0111]: table modified while being iterated by `pairs`
+--> 5:3: this write changes `set` during the traversal
+    4:18: `set` is being iterated here
+  = note: adding a key while `pairs` walks a table is undefined behavior in Lua — the traversal can skip or revisit entries; removing an existing key is legal, but Rime cannot prove this key already exists, so the write may be an insertion
+  = help: collect the changes in a second table (or a list of keys) during the loop and apply them to `set` after it ends

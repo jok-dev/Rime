@@ -1,0 +1,7 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0201]: `reach` may be nil
+--> 10:9: `reach` is indexed here
+  = note: declared with a type that admits nil, and nothing on this path proves it non-nil
+  = help: guard the use: `if reach ~= nil then ... end`

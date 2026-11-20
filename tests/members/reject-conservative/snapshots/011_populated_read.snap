@@ -1,0 +1,13 @@
+---
+source: crates/rime-check/tests/corpus.rs
+assertion_line: 234
+---
+warning[R0308] (conservative): write to `injected` on required module `dep`
+--> 8:8: written from outside the module
+  = note: a module's members belong to its own file — populating or patching it from a consumer creates hidden coupling and defeats member checking
+  = note: Rime treats required modules as sealed; move the state or member into the module that owns it
+
+error[R0307] (conservative): `injected` is not a member of module `dep`
+--> 10:14: no such member on the module's interface
+  = note: the export of `dep.luau` is fully static — its 1 member is known exactly
+  = note: Rime treats required modules as sealed; if this member is populated at runtime, define it in the module's own file instead

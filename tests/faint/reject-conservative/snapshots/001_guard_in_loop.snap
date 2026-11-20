@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0017] (conservative): `label` only feeds itself; its value is never used
+--> 11:9: `label` declared here
+  = note: its only reads guard its own fallback assignment; nothing ever consumes the value — the code that used `label` may have been deleted
+  = note: every read of this binding flows back into the binding; Rime cannot tell abandoned code from work-in-progress
+  = help: use the value, or delete `label` and its self-feeding statements

@@ -1,0 +1,332 @@
+name: Release
+
+# A `v*` tag builds the three executables, tests the tagged commit and
+# publishes a GitHub release. The assets are the executables themselves, not
+# archives, so the sha256 GitHub shows for an asset is the hash of the file a
+# user runs. Because no archive carries the license texts, they are assets
+# too: rime's LICENSE, THIRD-PARTY-NOTICES.txt for the packages and the
+# files from other projects built into the executables, and
+# COPYRIGHT-library.html, the Rust toolchain's own notices for the standard
+# library built into them. THIRD-PARTY-NOTICES.txt and the release notes say
+# where the source is.
+#
+# A manual run from the Actions tab is a rehearsal: it builds and tests the
+# same way and leaves the executables as workflow artifacts. It never
+# publishes.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  # Cargo.toml keeps debug info in release builds for profiling. Published
+  # executables drop it; function names stay, so a backtrace still names its
+  # frames.
+  CARGO_PROFILE_RELEASE_STRIP: debuginfo
+  # Link the C runtime into the Windows executable, so it runs on a machine
+  # without the Visual C++ redistributable. Applies to that target only.
+  CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUSTFLAGS: -C target-feature=+crt-static
+
+jobs:
+  version:
+    name: Check the tag against the workspace version
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the toolchain named in rust-toolchain.toml
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Compare the tag with the version in Cargo.toml
+        id: version
+        run: |
+          # Read from the manifests, not from Cargo.lock: the lock file may be
+          # stale after a version bump, and the build jobs refuse it if so.
+          version="$(cargo metadata --no-deps --locked --format-version 1 |
+            python3 -c 'import json, sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"] == "rime-cli"))')"
+          echo "workspace version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match the workspace version $version; the tag for this commit is v$version"
+            exit 1
+          fi
+
+  test:
+    name: Test
+    needs: version
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    name: Build ${{ matrix.asset }}
+    needs: version
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Built on the oldest hosted Ubuntu image, not on ubuntu-latest: an
+          # executable linked against an older glibc runs on newer ones, and
+          # not the other way round. The linux-on-latest job below then runs
+          # this exact file on ubuntu-latest. A static musl build is not an
+          # option while the Luau VM for custom rules is C++: Ubuntu packages
+          # no C++ compiler or libstdc++ for musl.
+          #
+          # GitHub is retiring ubuntu-22.04. Jobs on it fail from 14:00 UTC
+          # on 23 March, 30 March, 6 April and 13 April 2027, and the image
+          # is removed on 17 April 2027:
+          # https://github.com/actions/runner-images/issues/14254
+          # This row needs a replacement before 23 March 2027: a build in a
+          # container with an older glibc, or ubuntu-24.04 with a higher
+          # glibc floor. The summary of this job prints the floor of each
+          # build.
+          - asset: rime-linux
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            built: rime
+          - asset: rime-macos
+            os: macos-latest
+            target: aarch64-apple-darwin
+            built: rime
+          - asset: rime-windows.exe
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            built: rime.exe
+    env:
+      ASSET: ${{ matrix.asset }}
+      TARGET: ${{ matrix.target }}
+      BUILT: ${{ matrix.built }}
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      # Files built into the executable must be the bytes that are committed.
+      # Git for Windows would rewrite line endings on checkout.
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the toolchain named in rust-toolchain.toml
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add "$TARGET"
+          rustc -vV
+          cargo -V
+
+      # No build cache in this job: a published executable is always built
+      # from nothing.
+      - name: Build
+        run: cargo build --release --locked -p rime-cli --target "$TARGET"
+
+      - name: Name the executable
+        run: |
+          mkdir dist
+          cp "target/$TARGET/release/$BUILT" "dist/$ASSET"
+
+      # The executable may load the C and C++ runtimes every glibc
+      # distribution ships, and nothing else.
+      - name: Check what the Linux executable loads
+        if: runner.os == 'Linux'
+        run: |
+          file "dist/$ASSET"
+          needed="$(readelf --dynamic --wide "dist/$ASSET" |
+            sed -n 's/.*(NEEDED).*\[\(.*\)\]$/\1/p' | LC_ALL=C sort)"
+          echo "shared libraries:"
+          echo "$needed"
+          allowed='libc\.so\.6|libm\.so\.6|libdl\.so\.2|libpthread\.so\.0|librt\.so\.1|libgcc_s\.so\.1|libstdc\+\+\.so\.6|ld-linux-x86-64\.so\.2'
+          unexpected="$(grep -Evx "$allowed" <<< "$needed" || true)"
+          if [ -n "$unexpected" ]; then
+            echo "::error::dist/$ASSET loads a library outside the C and C++ runtimes: $(tr '\n' ' ' <<< "$unexpected")"
+            exit 1
+          fi
+          versions="$(readelf --version-info --wide "dist/$ASSET")"
+          glibc="$(grep -o 'GLIBC_[0-9.]*' <<< "$versions" | sort -uV | tail -n 1 || true)"
+          glibcxx="$(grep -o 'GLIBCXX_[0-9.]*' <<< "$versions" | sort -uV | tail -n 1 || true)"
+          echo "newest symbol versions needed: ${glibc:-no glibc}, ${glibcxx:-no libstdc++}"
+          echo "\`$ASSET\` needs at least: ${glibc:-no glibc}, ${glibcxx:-no libstdc++}." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check that the macOS executable is arm64
+        if: runner.os == 'macOS'
+        run: |
+          file "dist/$ASSET"
+          archs="$(lipo -archs "dist/$ASSET")"
+          if [ "$archs" != arm64 ]; then
+            echo "::error::dist/$ASSET is built for '$archs', expected arm64"
+            exit 1
+          fi
+
+      - name: Run the executable
+        run: bash scripts/smoke-test.sh "dist/$ASSET" "$VERSION"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+          if-no-files-found: error
+          retention-days: 7
+
+  # rime-linux is built on an older image. This job runs the file that will
+  # be published, as downloaded, on ubuntu-latest.
+  linux-on-latest:
+    name: Run rime-linux on ubuntu-latest
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: rime-linux
+          path: dist
+
+      - name: Run the executable
+        run: |
+          # Artifacts and release assets do not keep the executable bit.
+          chmod +x dist/rime-linux
+          ldd dist/rime-linux
+          bash scripts/smoke-test.sh dist/rime-linux "$VERSION"
+
+  licenses:
+    name: Collect the license texts
+    needs: version
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install the toolchain named in rust-toolchain.toml
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustc -vV
+
+      # No cache in this job either: the package sources the texts are read
+      # from are downloaded for every release.
+      #
+      # The script reads the license files out of the source of every package
+      # in Cargo.lock that rime is built from, and fails if one has none. It
+      # also copies the notices of the files from other projects that are
+      # kept in this repository and built in, and fails if one is missing.
+      # Give it every target of the build matrix above.
+      - name: Write THIRD-PARTY-NOTICES.txt
+        run: |
+          python3 scripts/third-party-notices.py \
+            --target x86_64-unknown-linux-gnu \
+            --target aarch64-apple-darwin \
+            --target x86_64-pc-windows-msvc \
+            --output dist/THIRD-PARTY-NOTICES.txt
+          cp LICENSE dist/LICENSE
+
+      # The executables are published bare, so the notices are where a user
+      # is told where the source is. The script takes the address from the
+      # `repository` field in Cargo.toml; it has to be the repository this
+      # release is made in, at the tag the version job checked.
+      - name: Check that the notices say where the source is
+        run: |
+          want="Source code: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY, tag v$VERSION"
+          have="$(grep -m 1 '^Source code: ' dist/THIRD-PARTY-NOTICES.txt || true)"
+          echo "$have"
+          # GitHub does not tell `Owner/Name` from `owner/name`.
+          lower() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
+          if [ "$(lower "$have")" != "$(lower "$want")" ]; then
+            echo "::error::dist/THIRD-PARTY-NOTICES.txt must have the line '$want'. It has '${have:-no such line}'. Set repository in Cargo.toml to this repository."
+            exit 1
+          fi
+
+      # The standard library is built into the executables too, and it is not
+      # a package in Cargo.lock. Its notices come with the compiler, which is
+      # the same release in every build job because rust-toolchain.toml names
+      # it, so the copy on this runner covers all three executables.
+      - name: Copy the standard library's notices out of the toolchain
+        run: |
+          notices="$(rustc --print sysroot)/share/doc/rust/COPYRIGHT-library.html"
+          if [ ! -s "$notices" ]; then
+            echo "::error::the toolchain has no $notices; the release would lack the standard library's notices"
+            exit 1
+          fi
+          cp "$notices" dist/COPYRIGHT-library.html
+          wc -c dist/LICENSE dist/THIRD-PARTY-NOTICES.txt dist/COPYRIGHT-library.html
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: licenses
+          path: |
+            dist/LICENSE
+            dist/THIRD-PARTY-NOTICES.txt
+            dist/COPYRIGHT-library.html
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish the GitHub release
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [version, test, build, linux-on-latest, licenses]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Download the executables
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: rime-*
+          path: dist
+          merge-multiple: true
+
+      - name: Download the license texts
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: licenses
+          path: dist
+
+      - name: Write SHA256SUMS
+        working-directory: dist
+        run: |
+          sha256sum rime-linux rime-macos rime-windows.exe > SHA256SUMS
+          sha256sum --check --strict SHA256SUMS
+          {
+            echo '```'
+            cat SHA256SUMS
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create the release
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          test -s LICENSE
+          test -s THIRD-PARTY-NOTICES.txt
+          test -s COPYRIGHT-library.html
+          gh release create "$TAG" \
+            --verify-tag \
+            --title "$TAG" \
+            --notes "The executables are distributed under the terms in LICENSE. Their source, and the source of the files from other projects that are built into them, is $GITHUB_SERVER_URL/$GITHUB_REPOSITORY at tag $TAG. THIRD-PARTY-NOTICES.txt names those files and holds the licenses of the packages built into the executables, and COPYRIGHT-library.html the notices of the Rust standard library." \
+            --generate-notes \
+            rime-linux rime-macos rime-windows.exe SHA256SUMS LICENSE THIRD-PARTY-NOTICES.txt COPYRIGHT-library.html

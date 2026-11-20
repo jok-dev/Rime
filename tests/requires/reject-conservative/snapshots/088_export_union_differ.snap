@@ -1,0 +1,9 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0502] (conservative): require target is not statically resolvable
+--> 5:20: Rime cannot follow this require
+  = note: every cross-file edge must resolve statically — that is what cross-file checking is built on; a computed target (or a shape the resolver does not model) breaks the graph here
+  = note: dynamic on purpose (a loader over children, content-keyed modules)? keep it and add `-- rime: allow(dynamic-require, "why")` on or above this line — the reason is mandatory
+  = note: resolves to A.luau / B.luau, which differ
+  = help: require each candidate statically and pick between the bound results

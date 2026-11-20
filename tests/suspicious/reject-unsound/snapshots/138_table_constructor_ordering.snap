@@ -1,0 +1,11 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0607]: `>` with a table constructor
+--> 15:9: always raises an error — a fresh table has nothing to be ordered by
+  = note: Luau orders two numbers, two strings, or two values that share one `__lt`/`__le` metamethod; a just-constructed table has no metatable, so this is "attempt to compare" at run time
+  = help: to compare sizes compare lengths (`#a < #b`); to test for emptiness use `next(t) == nil`
+
+error[R0607]: comparison with a table constructor
+--> 20:9: always false — each constructor makes its own fresh table
+  = note: `==` on tables compares identity, and two just-constructed tables are never the same object; to compare contents compare fields

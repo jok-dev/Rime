@@ -1,0 +1,8 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0202]: `p` is checked for nil after it was already indexed
+--> 9:6: nil check here
+    8:15: `p` is indexed here — throws if it is nil
+  = note: every path from the last assignment of `p` to this check reaches the use first, so if `p` can be nil the use throws and this check never runs
+  = help: move the check above the first use, or drop it if `p` cannot be nil

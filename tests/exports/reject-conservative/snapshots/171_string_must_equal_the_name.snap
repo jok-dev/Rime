@@ -1,0 +1,10 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0309] (conservative): export `refresh` of module `main` is never used
+--> 13:15: `refresh` exported here
+    extent: 13:1 to 13:28
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: the project has dynamic requires, so the bar is raised: `refresh` is flagged only because nothing in the project reads a member of that name off ANYTHING
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_refresh` if it is kept deliberately

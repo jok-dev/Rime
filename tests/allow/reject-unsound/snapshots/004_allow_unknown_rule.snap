@@ -1,0 +1,12 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+error[R0011] (conservative): `count` shadows an earlier declaration
+--> 8:9: `count` declared again here
+    6:8: still in scope from here
+  = note: both bindings exist; later reads silently pick the inner one, and Rime cannot tell a deliberate rebind from a mistake
+  = help: rename one `count`, or prefix with `_` if the outer one is finished
+
+warning[R0021]: allow names unknown rule `shadwoing`
+--> 8:19: in this directive
+  = note: use a rule name rime.toml accepts (e.g. `dynamic-require`) or a raw code like `R0502`

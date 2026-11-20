@@ -1,0 +1,16 @@
+---
+source: crates/rime-check/tests/corpus.rs
+---
+warning[R0309] (conservative): export `tick` of module `main` is never used
+--> 12:15: `tick` exported here
+    extent: 12:1 to 12:25
+    string match: consumer.luau:10
+    string match: consumer.luau:11
+    string match: consumer.luau:12
+    string match: main.luau:9
+    string match: main.luau:10
+  = note: no file that requires this module reads it, and the module itself does not
+  = note: the project has dynamic requires, so the bar is raised: `tick` is flagged only because nothing in the project reads a member of that name off ANYTHING
+  = note: the name also appears as a string, at consumer.luau:10, consumer.luau:11, consumer.luau:12 and 2 more: code behind a dynamic require may reach `tick` by that string, so check before deleting
+  = note: only statically-resolved requires and member reads are counted; a consumer outside this check's view, or one reached dynamically, would not be seen
+  = help: delete it, or rename to `_tick` if it is kept deliberately

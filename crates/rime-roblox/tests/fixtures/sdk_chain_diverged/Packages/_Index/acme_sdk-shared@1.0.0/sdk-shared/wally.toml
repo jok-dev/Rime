@@ -1,0 +1,4 @@
+[package]
+name = "acme/sdk-shared"
+version = "1.0.0"
+realm = "shared"
