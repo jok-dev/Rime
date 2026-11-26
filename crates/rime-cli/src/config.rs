@@ -50,6 +50,15 @@
 //! [names]
 //! player = ["player", "plr", "client"]   # variables that hold a Player
 //! ```
+//!
+//! And one reaches the project's custom rules (`rime-rules/`): the
+//! directory their `file.path` and `files` globs are relative to, when it
+//! is not rime.toml's own.
+//!
+//! ```toml
+//! [custom-rules]
+//! root = ".."                            # relative to rime.toml's directory
+//! ```
 
 use rime_check::rules::module_scope;
 use rime_diag::{Code, Diagnostic, Severity};
@@ -119,6 +128,12 @@ pub struct Config {
     /// (R0802, R0803) read as "this holds a Player". None: the rules'
     /// own default.
     player_names: Option<Vec<String>>,
+    /// `[custom-rules] root = "<dir>"` — the directory a custom rule's
+    /// `file.path`, and its `files` globs, are relative to, anchored to
+    /// rime.toml's directory and canonicalized at load. None: rime.toml's
+    /// own directory. A directory that is not there is an error, not a run
+    /// whose rules silently match nothing.
+    custom_rules_root: Option<PathBuf>,
 }
 
 impl Config {
@@ -258,6 +273,33 @@ impl Config {
             }
         }
 
+        let mut custom_rules_root = None;
+        if let Some(custom) = value.get("custom-rules") {
+            let Some(custom) = custom.as_table() else {
+                return Err("`custom-rules` must be a table — use [custom-rules] with `root`".to_string());
+            };
+            for (k, v) in custom {
+                match k.as_str() {
+                    "root" => {
+                        let Some(s) = v.as_str().filter(|s| !s.is_empty()) else {
+                            return Err("[custom-rules] root must be the path of a directory".to_string());
+                        };
+                        let here = if dir.as_os_str().is_empty() { Path::new(".") } else { dir };
+                        let anchored = here.join(s);
+                        let root = anchored
+                            .canonicalize()
+                            .ok()
+                            .filter(|p| p.is_dir())
+                            .ok_or_else(|| {
+                                format!("[custom-rules] root `{s}` is not a directory (looked at `{}`)", anchored.display())
+                            })?;
+                        custom_rules_root = Some(root);
+                    }
+                    other => return Err(format!("[custom-rules]: unknown key `{other}` (only `root`)")),
+                }
+            }
+        }
+
         let mut conservative_default = None;
         if let Some(c) = value.get("conservative") {
             let Some(c) = c.as_table() else {
@@ -303,6 +345,7 @@ impl Config {
                 only: None,
                 module_scope,
                 player_names,
+                custom_rules_root,
             });
         };
         let Some(table) = table.as_table() else {
@@ -441,6 +484,7 @@ impl Config {
             only: None,
             module_scope,
             player_names,
+            custom_rules_root,
         })
     }
 
@@ -489,6 +533,26 @@ impl Config {
     /// The Rojo project file rime.toml names (`project = "..."`), if any.
     pub fn project_file(&self) -> Option<&Path> {
         self.project.as_deref()
+    }
+
+    /// The directory custom rules see paths relative to: `[custom-rules]
+    /// root`, else None for rime.toml's own directory.
+    pub fn custom_rules_root(&self) -> Option<&Path> {
+        self.custom_rules_root.as_deref()
+    }
+
+    /// Whether reports with `code` can survive `apply`: listed under
+    /// `--only` when it is given, else not turned off and not an
+    /// off-by-default rule nobody gave a level.
+    pub fn reports(&self, code: Code) -> bool {
+        if let Some(only) = &self.only {
+            return only.contains(&code.0);
+        }
+        match self.rules.get(&code.0) {
+            Some(RuleSetting::Off) => false,
+            Some(_) => true,
+            None => !rime_diag::off_by_default(code),
+        }
     }
 
     pub fn trusted_requires(&self) -> Vec<String> {
@@ -1163,6 +1227,45 @@ mod tests {
         let other = dir.join("rime-ignore-test").join("src");
         std::fs::create_dir_all(&other).unwrap();
         assert!(!c.ignored(&other.canonicalize().unwrap().join("a.lua")));
+    }
+
+    #[test]
+    fn custom_rules_root_is_a_directory_relative_to_the_config() {
+        let dir = std::env::temp_dir().join(format!("rime-custom-root-{}", std::process::id()));
+        let tools = dir.join("tools");
+        std::fs::create_dir_all(&tools).unwrap();
+        let c = Config::parse("[custom-rules]
+root = \"..\"
+", &tools).unwrap();
+        assert_eq!(c.custom_rules_root(), Some(dir.canonicalize().unwrap().as_path()));
+        assert_eq!(Config::parse("", &tools).unwrap().custom_rules_root(), None);
+        std::fs::write(tools.join("a-file.txt"), "").unwrap();
+        for (text, want) in [
+            ("[custom-rules]
+root = \"a-file.txt\"
+", "is not a directory"),
+            ("[custom-rules]
+root = \"missing\"
+", "is not a directory"),
+            ("[custom-rules]
+root = 3
+", "must be the path of a directory"),
+            ("[custom-rules]
+root = \"\"
+", "must be the path of a directory"),
+            ("[custom-rules]
+rot = \"..\"
+", "unknown key `rot`"),
+            ("custom-rules = \"..\"
+", "must be a table"),
+        ] {
+            let err = Config::parse(text, &tools).unwrap_err();
+            assert!(err.contains(want), "{text:?}: {err}");
+        }
+        // The error shows where the path landed, not only what was typed.
+        let err = Config::parse("[custom-rules]\nroot = \"missing\"\n", &tools).unwrap_err();
+        assert!(err.contains(&tools.join("missing").display().to_string()), "{err}");
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]

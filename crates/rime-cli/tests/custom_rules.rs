@@ -2,7 +2,7 @@
 //! and report through the normal JSON output. Projects are generated per
 //! test in a temp dir (same convention as json_format.rs).
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 // The example rules shipped in `examples/rime-rules/` are the fixtures here,
@@ -223,4 +223,172 @@ fn timings_list_each_rule() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(stderr.contains("custom: no-direct-destroy"), "{stderr}");
     assert!(stderr.contains("load custom rules"), "{stderr}");
+}
+
+// A project with no rime.toml or rime-rules/ at its root: the config and the
+// rules live under tools/, as in a repo that keeps lint tooling in a subfolder.
+fn subfolder_project(name: &str, toml: &str) -> Project {
+    let p = Project::new(name);
+    std::fs::remove_file(p.dir.join("rime.toml")).unwrap();
+    std::fs::remove_dir_all(p.dir.join("rime-rules")).unwrap();
+    p.file("tools/rime.toml", toml)
+        .file("tools/rime-rules/no-direct-destroy.luau", WRAPPER_BAN)
+        .file("src/A.lua", "local pooledPart = workspace.Part
+pooledPart:Destroy()
+");
+    p
+}
+
+fn run(p: &Project, args: &[&str]) -> (i32, serde_json::Value, String) {
+    run_in(p, "", args)
+}
+
+/// `run`, started in `sub` under the project instead of its top.
+fn run_in(p: &Project, sub: &str, args: &[&str]) -> (i32, serde_json::Value, String) {
+    let mut all = vec!["check", "--format", "json"];
+    all.extend_from_slice(args);
+    let out = Command::new(env!("CARGO_BIN_EXE_rime"))
+        .args(&all)
+        .current_dir(p.dir.join(sub))
+        .output()
+        .expect("spawn rime");
+    let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
+    let v = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
+    (out.status.code().unwrap_or(-1), v, stderr)
+}
+
+#[test]
+fn custom_rules_root_lets_a_subfolder_config_check_project_files() {
+    let p = subfolder_project("root-set", "[custom-rules]
+root = \"..\"
+");
+    let (_, v, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert_eq!(diags_with_rule(&v, "no-direct-destroy").len(), 1, "{v}
+stderr: {stderr}");
+    assert!(!stderr.contains("did not run on"), "every file is under the root: {stderr}");
+}
+
+#[test]
+fn without_a_root_a_subfolder_config_says_which_files_rules_skipped() {
+    let p = subfolder_project("root-unset", "");
+    let (_, v, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert!(diags_with_rule(&v, "no-direct-destroy").is_empty(), "{v}");
+    assert!(stderr.contains("custom rules did not run on 1 file outside"), "{stderr}");
+    assert!(stderr.contains("[custom-rules] root"), "the note says how to fix it: {stderr}");
+}
+
+#[test]
+fn custom_rules_root_gives_each_file_one_path() {
+    // game/src/A.lua is `game/src/A.lua` under the root, never `src/A.lua`,
+    // so a rule for src/ does not also fire on game/src/.
+    let p = subfolder_project("root-unique", "[custom-rules]
+root = \"..\"
+");
+    p.file("game/src/A.lua", "local pooledPart = workspace.Part
+pooledPart:Destroy()
+");
+    let (_, v, stderr) = run(&p, &["src", "game", "--config", "tools/rime.toml"]);
+    let hits = diags_with_rule(&v, "no-direct-destroy");
+    assert_eq!(hits.len(), 1, "{v}
+stderr: {stderr}");
+    let file = hits[0]["path"].as_str().expect("a diagnostic has a path");
+    assert!(!file.replace('\\', "/").contains("game/"), "the hit is root src/A.lua: {v}");
+}
+
+#[test]
+fn custom_rules_root_that_is_not_a_directory_is_an_error() {
+    let p = subfolder_project("root-missing", "[custom-rules]
+root = \"nope\"
+");
+    let (code, _, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert_ne!(code, 0);
+    assert!(stderr.contains("[custom-rules] root `nope` is not a directory"), "{stderr}");
+}
+
+const DESTROY: &str = "local pooledPart = workspace.Part
+pooledPart:Destroy()
+";
+
+#[test]
+fn custom_rules_root_applies_to_a_config_found_by_walking_up() {
+    // Started in tools/, rime.toml is found there, and `..` still reaches src/.
+    let p = subfolder_project("root-walk-up", "[custom-rules]
+root = \"..\"
+");
+    let (_, v, stderr) = run_in(&p, "tools", &["../src"]);
+    assert_eq!(diags_with_rule(&v, "no-direct-destroy").len(), 1, "{v}
+stderr: {stderr}");
+    assert!(!stderr.contains("did not run on"), "{stderr}");
+}
+
+#[test]
+fn custom_rules_root_applies_to_a_bare_config_flag() {
+    let p = subfolder_project("root-bare-config", "[custom-rules]
+root = \"..\"
+");
+    let (_, v, stderr) = run_in(&p, "tools", &["../src", "--config", "rime.toml"]);
+    assert_eq!(diags_with_rule(&v, "no-direct-destroy").len(), 1, "{v}
+stderr: {stderr}");
+}
+
+#[test]
+fn the_note_names_the_starting_directory_as_dot() {
+    // The base is tools/, which is where the run started: shown as `.`, not
+    // as an empty name.
+    let p = subfolder_project("root-note-cwd", "");
+    let (_, _, stderr) = run_in(&p, "tools", &["../src"]);
+    assert!(stderr.contains("1 file outside `.`,"), "{stderr}");
+}
+
+#[test]
+fn the_note_names_a_root_narrower_than_the_config_directory() {
+    let p = subfolder_project("root-narrow", "[custom-rules]
+root = \"lib\"
+");
+    p.file("tools/lib/Keep.lua", "return {}
+");
+    let (_, v, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert!(diags_with_rule(&v, "no-direct-destroy").is_empty(), "{v}");
+    let want = format!("1 file outside `{}`,", Path::new("tools").join("lib").display());
+    assert!(stderr.contains(&want), "want {want:?}: {stderr}");
+}
+
+#[test]
+fn the_note_counts_every_file_left_out() {
+    let p = subfolder_project("root-note-plural", "");
+    p.file("src/B.lua", DESTROY);
+    let (_, _, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert!(stderr.contains("did not run on 2 files outside"), "{stderr}");
+}
+
+#[test]
+fn no_note_when_no_custom_rule_could_report() {
+    let p = subfolder_project("root-note-off", "");
+    for args in [
+        &["src", "--config", "tools/rime.toml", "--no-custom-rules"][..],
+        &["src", "--config", "tools/rime.toml", "--only", "R0041"][..],
+    ] {
+        let (_, _, stderr) = run(&p, args);
+        assert!(!stderr.contains("did not run on"), "{args:?}: {stderr}");
+    }
+    let p = subfolder_project("root-note-rule-off", "[rules]
+no-direct-destroy = \"off\"
+");
+    let (_, _, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert!(!stderr.contains("did not run on"), "the only rule is off: {stderr}");
+}
+
+#[test]
+fn the_note_counts_only_the_files_asked_for() {
+    // In project mode src/B.lua is read for cross-file checking, but only
+    // src/A.lua was asked for, so only it counts as left out.
+    let p = subfolder_project("root-note-project", "");
+    p.file(
+        "default.project.json",
+        r#"{ "name": "t", "tree": { "$className": "DataModel", "ReplicatedStorage": {
+    "$className": "ReplicatedStorage", "Source": { "$path": "src" } } } }"#,
+    )
+    .file("src/B.lua", DESTROY);
+    let (_, _, stderr) = run(&p, &["src/A.lua", "--config", "tools/rime.toml"]);
+    assert!(stderr.contains("did not run on 1 file outside"), "{stderr}");
 }

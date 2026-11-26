@@ -350,6 +350,14 @@ globals = ["describe", "it", "expect", "PluginManager"]
 # counts. `*` matches any run of characters. Default: ["player", "plr"].
 player = ["player", "plr", "client", "*Player"]
 
+[custom-rules]
+# The directory a custom rule (rime-rules/*.luau) sees file paths, and
+# matches its `files` globs, relative to. Default: this file's directory.
+# Set it when this file is not at the top of what you check, e.g. a
+# rime.toml under tools/ that checks src/: rules never run on files
+# outside it, and the run prints a note saying how many it left out.
+# root = ".."
+
 [conservative]
 # Reports Rime marks `(conservative)` are its stated limitations, not
 # proof of a bug. This downgrades every such report on top of its

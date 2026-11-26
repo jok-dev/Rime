@@ -487,6 +487,14 @@ fn check(
             return std::process::ExitCode::FAILURE;
         }
     };
+    // A custom rule sees each file's path, and matches its `files` globs,
+    // relative to one directory for the whole run: `[custom-rules] root` when
+    // rime.toml sets it, else rime.toml's own directory. A file outside it is
+    // not checked by custom rules, and the run says how many were left out.
+    let rule_paths_base: Option<PathBuf> = rules_root
+        .as_ref()
+        .map(|root| ws.config.custom_rules_root().map_or_else(|| root.clone(), Path::to_path_buf));
+    let mut outside_rule_paths_base = 0usize;
     // A path that exists but holds nothing to check is not an error (an
     // empty directory is a legitimate thing to point at, and Selene and
     // StyLua both exit 0 on one), but it is said out loud: "0 files" in
@@ -522,6 +530,11 @@ fn check(
     for warning in ws.config.rule_option_warnings() {
         eprintln!("rime: warning: {warning}");
     }
+
+    // After `--only` too: a file outside the rule paths' directory only
+    // counts as missed when some custom rule could have reported on it.
+    let any_custom_rule_reports =
+        engine.as_ref().is_some_and(|e| e.rule_codes().into_iter().any(|code| ws.config.reports(code)));
 
     // Paths render relative to the invocation directory (clickable in
     // editors, matches clippy/tsc); files outside it fall back to absolute,
@@ -661,8 +674,12 @@ fn check(
             require_notes.add_file(&display_path(&report.path), src, file_notes);
         }
         let mut diags = report.diagnostics;
-        if let (Some(engine), Some(root), false) = (engine.as_mut(), rules_root.as_ref(), custom_rules_crashed) {
-            if let (Some(module), Ok(rel)) = (session.module(&report.path), report.path.strip_prefix(root)) {
+        if let (Some(engine), Some(base), false) = (engine.as_mut(), rule_paths_base.as_ref(), custom_rules_crashed) {
+            let rel = report.path.strip_prefix(base).ok();
+            if rel.is_none() && any_custom_rule_reports {
+                outside_rule_paths_base += 1;
+            }
+            if let (Some(module), Some(rel)) = (session.module(&report.path), rel) {
                 let rel = rel.to_string_lossy().replace('\\', "/");
                 let ran = guard::catch(|| {
                     guard::fault("custom", &report.path);
@@ -701,6 +718,19 @@ fn check(
     for d in session.project_errors() {
         project_internal_errors += 1;
         eprint_internal_error(d);
+    }
+
+    // Files custom rules could not see: said once, so a rule that matches
+    // nothing because of where rime.toml lives is not a silent pass.
+    if let (Some(base), true) = (rule_paths_base.as_ref(), outside_rule_paths_base > 0) {
+        let files = if outside_rule_paths_base == 1 { "file" } else { "files" };
+        // The directory the run started in shows as an empty path.
+        let shown = display_path(base);
+        let shown = if shown.is_empty() { ".".to_string() } else { shown };
+        eprintln!(
+            "rime: note: custom rules did not run on {outside_rule_paths_base} {files} outside `{shown}`, the \
+             directory their paths are relative to. Set `[custom-rules] root` in rime.toml to a directory above them."
+        );
     }
 
     // Throwing rules report once per (rule, error line) for the whole run,

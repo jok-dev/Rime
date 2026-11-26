@@ -82,6 +82,14 @@ pub fn render() -> String {
     line("# never raise one. Default: the rule's own level.");
     line("# default = \"warn\"");
     line("");
+    line("# [custom-rules]");
+    line("# The directory custom rules (rime-rules/*.luau beside this file) see");
+    line("# paths relative to: each rule's `file.path` and `files` globs. Files");
+    line("# outside it are not checked by custom rules, and the run says how many.");
+    line("# Set it when this file lives below the project root. Default: this");
+    line("# file's own directory.");
+    line("# root = \"..\"");
+    line("");
     line("# Custom rules from rime-rules/*.luau are keyed by their id under [rules]");
     line("# exactly like core rules, e.g. `my-rule = \"off\"`.");
     line("");

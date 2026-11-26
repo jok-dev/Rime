@@ -164,6 +164,11 @@ impl Engine {
         self.rules.iter().map(|r| r.id.as_str()).collect()
     }
 
+    /// Each rule's diagnostic code, in load order.
+    pub fn rule_codes(&self) -> Vec<rime_diag::Code> {
+        self.rules.iter().map(|r| r.code).collect()
+    }
+
     /// Run every rule whose `files` glob matches `rel_path`. Files no rule
     /// matches cost nothing: the HIR is bridged only when needed.
     pub fn check_file(&mut self, rel_path: &str, module: &rime_hir::Module, src: &str) -> FileOut {
