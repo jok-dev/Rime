@@ -38,12 +38,22 @@ return {
 }
 ```
 
-`file.path`, and what `files` globs match, is relative to the directory
-of the rime.toml in use. A file outside that directory, as when the config
-lives in a subfolder (`rime check src --config tools/rime-ci.toml`, with
-`tools/rime-rules/` beside it), is relative to the Rojo project file's
-directory instead, so `files = "src/**"` still matches. With no Rojo project
-file, such a file is not checked by custom rules.
+`file.path`, and what `files` globs match, is relative to one directory
+for the whole run: rime.toml's own, unless rime.toml names another with
+`[custom-rules] root` (relative to rime.toml). A config kept in a subfolder
+sets it to the project root, so `files = "src/**"` matches the project's
+`src/`:
+
+```toml
+# tools/rime-ci.toml, with its rules in tools/rime-rules/
+[custom-rules]
+root = ".."
+```
+
+A checked file outside that directory is not checked by custom rules, and
+`rime check` prints one note saying how many files that was. A `root` that
+is not a directory is an error. `ignore`, and the module-scope rule's
+`scripts` and `exclude`, stay relative to rime.toml itself.
 
 `node_or_span` is any node from the tree (its `span` is used) or a table
 `{ start = <byte>, ["end"] = <byte> }`. Every `ctx:fail` is its own

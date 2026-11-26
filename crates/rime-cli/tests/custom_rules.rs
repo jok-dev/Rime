@@ -225,19 +225,73 @@ fn timings_list_each_rule() {
     assert!(stderr.contains("load custom rules"), "{stderr}");
 }
 
-#[test]
-fn config_in_a_subfolder_still_checks_project_files() {
-    // rime.toml and rime-rules/ kept under tools/, the code under src/ beside
-    // the Rojo project file: the rule sees `src/A.lua` and its glob matches.
-    let p = Project::new("subfolder-config");
-    p.file("tools/rime.toml", "")
+// A project with no rime.toml or rime-rules/ at its root: the config and the
+// rules live under tools/, as in a repo that keeps lint tooling in a subfolder.
+fn subfolder_project(name: &str, toml: &str) -> Project {
+    let p = Project::new(name);
+    std::fs::remove_file(p.dir.join("rime.toml")).unwrap();
+    std::fs::remove_dir_all(p.dir.join("rime-rules")).unwrap();
+    p.file("tools/rime.toml", toml)
         .file("tools/rime-rules/no-direct-destroy.luau", WRAPPER_BAN)
-        .file(
-            "default.project.json",
-            r#"{ "name": "game", "tree": { "$className": "DataModel", "ReplicatedStorage": { "$path": "src" } } }"#,
-        )
-        .file("src/A.lua", "local pooledPart = workspace.Part\npooledPart:Destroy()\n");
-    let (_, v, stderr) = p.check(&["--config", "tools/rime.toml"]);
+        .file("src/A.lua", "local pooledPart = workspace.Part
+pooledPart:Destroy()
+");
+    p
+}
+
+fn run(p: &Project, args: &[&str]) -> (i32, serde_json::Value, String) {
+    let mut all = vec!["check", "--format", "json"];
+    all.extend_from_slice(args);
+    let out = Command::new(env!("CARGO_BIN_EXE_rime")).args(&all).current_dir(&p.dir).output().expect("spawn rime");
+    let stderr = String::from_utf8_lossy(&out.stderr).into_owned();
+    let v = serde_json::from_slice(&out.stdout).unwrap_or(serde_json::Value::Null);
+    (out.status.code().unwrap_or(-1), v, stderr)
+}
+
+#[test]
+fn custom_rules_root_lets_a_subfolder_config_check_project_files() {
+    let p = subfolder_project("root-set", "[custom-rules]
+root = \"..\"
+");
+    let (_, v, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert_eq!(diags_with_rule(&v, "no-direct-destroy").len(), 1, "{v}
+stderr: {stderr}");
+    assert!(!stderr.contains("did not run on"), "every file is under the root: {stderr}");
+}
+
+#[test]
+fn without_a_root_a_subfolder_config_says_which_files_rules_skipped() {
+    let p = subfolder_project("root-unset", "");
+    let (_, v, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert!(diags_with_rule(&v, "no-direct-destroy").is_empty(), "{v}");
+    assert!(stderr.contains("custom rules did not run on 1 file outside"), "{stderr}");
+    assert!(stderr.contains("[custom-rules] root"), "the note says how to fix it: {stderr}");
+}
+
+#[test]
+fn custom_rules_root_gives_each_file_one_path() {
+    // game/src/A.lua is `game/src/A.lua` under the root, never `src/A.lua`,
+    // so a rule for src/ does not also fire on game/src/.
+    let p = subfolder_project("root-unique", "[custom-rules]
+root = \"..\"
+");
+    p.file("game/src/A.lua", "local pooledPart = workspace.Part
+pooledPart:Destroy()
+");
+    let (_, v, stderr) = run(&p, &["src", "game", "--config", "tools/rime.toml"]);
     let hits = diags_with_rule(&v, "no-direct-destroy");
-    assert_eq!(hits.len(), 1, "a rule beside a subfolder rime.toml must reach src/: {v}\nstderr: {stderr}");
+    assert_eq!(hits.len(), 1, "{v}
+stderr: {stderr}");
+    let file = hits[0]["path"].as_str().expect("a diagnostic has a path");
+    assert!(!file.replace('\\', "/").contains("game/"), "the hit is root src/A.lua: {v}");
+}
+
+#[test]
+fn custom_rules_root_that_is_not_a_directory_is_an_error() {
+    let p = subfolder_project("root-missing", "[custom-rules]
+root = \"nope\"
+");
+    let (code, _, stderr) = run(&p, &["src", "--config", "tools/rime.toml"]);
+    assert_ne!(code, 0);
+    assert!(stderr.contains("[custom-rules] root `nope` is not a directory"), "{stderr}");
 }

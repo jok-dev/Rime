@@ -487,19 +487,14 @@ fn check(
             return std::process::ExitCode::FAILURE;
         }
     };
-    // A custom rule sees each file's path relative to rime.toml's directory.
-    // A file outside it (a config kept in a subfolder, such as
-    // tools/rime/rime-ci.toml, checking src/) falls back to the Rojo project
-    // file's directory, so `files = "src/**"` still matches; without this the
-    // file was skipped silently. Files under rime.toml's directory keep the
-    // path they always had.
-    let rule_paths_fallback: Option<PathBuf> = rules_root.as_ref().and_then(|_| {
-        ws.project
-            .file()
-            .and_then(Path::parent)
-            .map(|d| if d.as_os_str().is_empty() { cwd.clone() } else if d.is_absolute() { d.to_path_buf() } else { cwd.join(d) })
-            .map(|d| d.canonicalize().unwrap_or(d))
-    });
+    // A custom rule sees each file's path, and matches its `files` globs,
+    // relative to one directory for the whole run: `[custom-rules] root` when
+    // rime.toml sets it, else rime.toml's own directory. A file outside it is
+    // not checked by custom rules, and the run says how many were left out.
+    let rule_paths_base: Option<PathBuf> = rules_root
+        .as_ref()
+        .map(|root| ws.config.custom_rules_root().map_or_else(|| root.clone(), Path::to_path_buf));
+    let mut outside_rule_paths_base = 0usize;
     // A path that exists but holds nothing to check is not an error (an
     // empty directory is a legitimate thing to point at, and Selene and
     // StyLua both exit 0 on one), but it is said out loud: "0 files" in
@@ -674,12 +669,11 @@ fn check(
             require_notes.add_file(&display_path(&report.path), src, file_notes);
         }
         let mut diags = report.diagnostics;
-        if let (Some(engine), Some(root), false) = (engine.as_mut(), rules_root.as_ref(), custom_rules_crashed) {
-            let rel = report
-                .path
-                .strip_prefix(root)
-                .ok()
-                .or_else(|| rule_paths_fallback.as_deref().and_then(|base| report.path.strip_prefix(base).ok()));
+        if let (Some(engine), Some(base), false) = (engine.as_mut(), rule_paths_base.as_ref(), custom_rules_crashed) {
+            let rel = report.path.strip_prefix(base).ok();
+            if rel.is_none() && !engine.rule_ids().is_empty() {
+                outside_rule_paths_base += 1;
+            }
             if let (Some(module), Some(rel)) = (session.module(&report.path), rel) {
                 let rel = rel.to_string_lossy().replace('\\', "/");
                 let ran = guard::catch(|| {
@@ -719,6 +713,17 @@ fn check(
     for d in session.project_errors() {
         project_internal_errors += 1;
         eprint_internal_error(d);
+    }
+
+    // Files custom rules could not see: said once, so a rule that matches
+    // nothing because of where rime.toml lives is not a silent pass.
+    if let (Some(base), true) = (rule_paths_base.as_ref(), outside_rule_paths_base > 0) {
+        let files = if outside_rule_paths_base == 1 { "file" } else { "files" };
+        eprintln!(
+            "rime: note: custom rules did not run on {outside_rule_paths_base} {files} outside `{}`, the directory \
+             their paths are relative to. Set `[custom-rules] root` in rime.toml to a directory above them.",
+            display_path(base)
+        );
     }
 
     // Throwing rules report once per (rule, error line) for the whole run,
