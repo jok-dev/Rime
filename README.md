@@ -11,7 +11,7 @@ nothing to migrate away from — and what it does today fits in one sentence:
 > fit its function, a `require` that reaches no module, a write to a frozen
 > table, a value annotated as optional used where `nil` throws.
 
-Rime 0.1.0 does not infer types: where a check needs a type, it reads the
+Rime 0.1.1 does not infer types: where a check needs a type, it reads the
 annotation you wrote. So a clean run means the rules found nothing. It does
 not prove that a module cannot fail at run time. A report Rime cannot prove
 is marked conservative: `(conservative)` in the text output, with or
@@ -47,7 +47,7 @@ without `--plain`, and `"conservative": true` with `--format json`.
 file Rime reads is ordinary `.luau`. No build step, no source maps; the
 existing toolchain (luau-lsp, StyLua, Selene, Rojo) keeps working untouched.
 The only thing Rime adds to a file is a comment,
-`-- rime: allow(<rule>, "reason")`. In 0.1.0 the subset bans less than the
+`-- rime: allow(<rule>, "reason")`. In 0.1.1 the subset bans less than the
 design in `DESIGN.md` describes:
 
 - **Annotations are read, not required.** A check that needs a type takes
@@ -149,7 +149,7 @@ Invoke-WebRequest https://github.com/jok-dev/Rime/releases/latest/download/SHA25
 .\rime.exe --version
 ```
 
-To pin a version, replace `latest/download` with `download/v0.1.0`. The
+To pin a version, replace `latest/download` with `download/v0.1.1`. The
 release also holds `LICENSE`, `THIRD-PARTY-NOTICES.txt` and
 `COPYRIGHT-library.html`: the license texts for everything built into the
 executables.
