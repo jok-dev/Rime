@@ -50,6 +50,15 @@
 //! [names]
 //! player = ["player", "plr", "client"]   # variables that hold a Player
 //! ```
+//!
+//! And one reaches the project's custom rules (`rime-rules/`): the
+//! directory their `file.path` and `files` globs are relative to, when it
+//! is not rime.toml's own.
+//!
+//! ```toml
+//! [custom-rules]
+//! root = ".."                            # relative to rime.toml's directory
+//! ```
 
 use rime_check::rules::module_scope;
 use rime_diag::{Code, Diagnostic, Severity};
@@ -281,7 +290,9 @@ impl Config {
                             .canonicalize()
                             .ok()
                             .filter(|p| p.is_dir())
-                            .ok_or_else(|| format!("[custom-rules] root `{s}` is not a directory"))?;
+                            .ok_or_else(|| {
+                                format!("[custom-rules] root `{s}` is not a directory (looked at `{}`)", anchored.display())
+                            })?;
                         custom_rules_root = Some(root);
                     }
                     other => return Err(format!("[custom-rules]: unknown key `{other}` (only `root`)")),
@@ -528,6 +539,20 @@ impl Config {
     /// root`, else None for rime.toml's own directory.
     pub fn custom_rules_root(&self) -> Option<&Path> {
         self.custom_rules_root.as_deref()
+    }
+
+    /// Whether reports with `code` can survive `apply`: listed under
+    /// `--only` when it is given, else not turned off and not an
+    /// off-by-default rule nobody gave a level.
+    pub fn reports(&self, code: Code) -> bool {
+        if let Some(only) = &self.only {
+            return only.contains(&code.0);
+        }
+        match self.rules.get(&code.0) {
+            Some(RuleSetting::Off) => false,
+            Some(_) => true,
+            None => !rime_diag::off_by_default(code),
+        }
     }
 
     pub fn trusted_requires(&self) -> Vec<String> {
@@ -1214,7 +1239,11 @@ root = \"..\"
 ", &tools).unwrap();
         assert_eq!(c.custom_rules_root(), Some(dir.canonicalize().unwrap().as_path()));
         assert_eq!(Config::parse("", &tools).unwrap().custom_rules_root(), None);
+        std::fs::write(tools.join("a-file.txt"), "").unwrap();
         for (text, want) in [
+            ("[custom-rules]
+root = \"a-file.txt\"
+", "is not a directory"),
             ("[custom-rules]
 root = \"missing\"
 ", "is not a directory"),
@@ -1233,6 +1262,9 @@ rot = \"..\"
             let err = Config::parse(text, &tools).unwrap_err();
             assert!(err.contains(want), "{text:?}: {err}");
         }
+        // The error shows where the path landed, not only what was typed.
+        let err = Config::parse("[custom-rules]\nroot = \"missing\"\n", &tools).unwrap_err();
+        assert!(err.contains(&tools.join("missing").display().to_string()), "{err}");
         std::fs::remove_dir_all(&dir).ok();
     }
 

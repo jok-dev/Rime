@@ -531,6 +531,11 @@ fn check(
         eprintln!("rime: warning: {warning}");
     }
 
+    // After `--only` too: a file outside the rule paths' directory only
+    // counts as missed when some custom rule could have reported on it.
+    let any_custom_rule_reports =
+        engine.as_ref().is_some_and(|e| e.rule_codes().into_iter().any(|code| ws.config.reports(code)));
+
     // Paths render relative to the invocation directory (clickable in
     // editors, matches clippy/tsc); files outside it fall back to absolute,
     // minus the Windows `\\?\` verbatim prefix either way.
@@ -671,7 +676,7 @@ fn check(
         let mut diags = report.diagnostics;
         if let (Some(engine), Some(base), false) = (engine.as_mut(), rule_paths_base.as_ref(), custom_rules_crashed) {
             let rel = report.path.strip_prefix(base).ok();
-            if rel.is_none() && !engine.rule_ids().is_empty() {
+            if rel.is_none() && any_custom_rule_reports {
                 outside_rule_paths_base += 1;
             }
             if let (Some(module), Some(rel)) = (session.module(&report.path), rel) {
@@ -719,10 +724,12 @@ fn check(
     // nothing because of where rime.toml lives is not a silent pass.
     if let (Some(base), true) = (rule_paths_base.as_ref(), outside_rule_paths_base > 0) {
         let files = if outside_rule_paths_base == 1 { "file" } else { "files" };
+        // The directory the run started in shows as an empty path.
+        let shown = display_path(base);
+        let shown = if shown.is_empty() { ".".to_string() } else { shown };
         eprintln!(
-            "rime: note: custom rules did not run on {outside_rule_paths_base} {files} outside `{}`, the directory \
-             their paths are relative to. Set `[custom-rules] root` in rime.toml to a directory above them.",
-            display_path(base)
+            "rime: note: custom rules did not run on {outside_rule_paths_base} {files} outside `{shown}`, the \
+             directory their paths are relative to. Set `[custom-rules] root` in rime.toml to a directory above them."
         );
     }
 
