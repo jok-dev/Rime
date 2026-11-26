@@ -487,6 +487,19 @@ fn check(
             return std::process::ExitCode::FAILURE;
         }
     };
+    // A custom rule sees each file's path relative to rime.toml's directory.
+    // A file outside it (a config kept in a subfolder, such as
+    // tools/rime/rime-ci.toml, checking src/) falls back to the Rojo project
+    // file's directory, so `files = "src/**"` still matches; without this the
+    // file was skipped silently. Files under rime.toml's directory keep the
+    // path they always had.
+    let rule_paths_fallback: Option<PathBuf> = rules_root.as_ref().and_then(|_| {
+        ws.project
+            .file()
+            .and_then(Path::parent)
+            .map(|d| if d.as_os_str().is_empty() { cwd.clone() } else if d.is_absolute() { d.to_path_buf() } else { cwd.join(d) })
+            .map(|d| d.canonicalize().unwrap_or(d))
+    });
     // A path that exists but holds nothing to check is not an error (an
     // empty directory is a legitimate thing to point at, and Selene and
     // StyLua both exit 0 on one), but it is said out loud: "0 files" in
@@ -662,7 +675,12 @@ fn check(
         }
         let mut diags = report.diagnostics;
         if let (Some(engine), Some(root), false) = (engine.as_mut(), rules_root.as_ref(), custom_rules_crashed) {
-            if let (Some(module), Ok(rel)) = (session.module(&report.path), report.path.strip_prefix(root)) {
+            let rel = report
+                .path
+                .strip_prefix(root)
+                .ok()
+                .or_else(|| rule_paths_fallback.as_deref().and_then(|base| report.path.strip_prefix(base).ok()));
+            if let (Some(module), Some(rel)) = (session.module(&report.path), rel) {
                 let rel = rel.to_string_lossy().replace('\\', "/");
                 let ran = guard::catch(|| {
                     guard::fault("custom", &report.path);

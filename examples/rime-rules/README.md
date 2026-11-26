@@ -38,6 +38,13 @@ return {
 }
 ```
 
+`file.path`, and what `files` globs match, is relative to the directory
+of the rime.toml in use. A file outside that directory, as when the config
+lives in a subfolder (`rime check src --config tools/rime-ci.toml`, with
+`tools/rime-rules/` beside it), is relative to the Rojo project file's
+directory instead, so `files = "src/**"` still matches. With no Rojo project
+file, such a file is not checked by custom rules.
+
 `node_or_span` is any node from the tree (its `span` is used) or a table
 `{ start = <byte>, ["end"] = <byte> }`. Every `ctx:fail` is its own
 diagnostic — never merge occurrences.

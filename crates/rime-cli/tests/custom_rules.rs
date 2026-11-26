@@ -224,3 +224,20 @@ fn timings_list_each_rule() {
     assert!(stderr.contains("custom: no-direct-destroy"), "{stderr}");
     assert!(stderr.contains("load custom rules"), "{stderr}");
 }
+
+#[test]
+fn config_in_a_subfolder_still_checks_project_files() {
+    // rime.toml and rime-rules/ kept under tools/, the code under src/ beside
+    // the Rojo project file: the rule sees `src/A.lua` and its glob matches.
+    let p = Project::new("subfolder-config");
+    p.file("tools/rime.toml", "")
+        .file("tools/rime-rules/no-direct-destroy.luau", WRAPPER_BAN)
+        .file(
+            "default.project.json",
+            r#"{ "name": "game", "tree": { "$className": "DataModel", "ReplicatedStorage": { "$path": "src" } } }"#,
+        )
+        .file("src/A.lua", "local pooledPart = workspace.Part\npooledPart:Destroy()\n");
+    let (_, v, stderr) = p.check(&["--config", "tools/rime.toml"]);
+    let hits = diags_with_rule(&v, "no-direct-destroy");
+    assert_eq!(hits.len(), 1, "a rule beside a subfolder rime.toml must reach src/: {v}\nstderr: {stderr}");
+}
